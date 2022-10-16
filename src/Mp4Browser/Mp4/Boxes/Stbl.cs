@@ -89,8 +89,6 @@ namespace Mp4Browser.Mp4.Boxes
                         {
                             var s = ReadText(fs, offset, handlerType, i);
                             sbTexts.AppendLine($" {i} - {s}");
-                            if (s == "Amen. Dig in.")
-                                s = s;
                         }
 
                         lastOffset = offset;

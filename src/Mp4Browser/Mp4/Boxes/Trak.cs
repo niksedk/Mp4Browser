@@ -36,7 +36,20 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + " - " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "TrackId: " + Tkhd.TrackId + Environment.NewLine +
+                              "Duration: " + Tkhd.Duration + Environment.NewLine +
+                              "Width: " + Tkhd.Width + Environment.NewLine +
+                              "Height: " + Tkhd.Height + Environment.NewLine +
+                              "RotationMatrix: "  + Tkhd.RotationMatrix[0] + " "
+                                                  + Tkhd.RotationMatrix[1] + " "
+                                                  + Tkhd.RotationMatrix[2] + " "
+                                                  + Tkhd.RotationMatrix[3] + " "
+                                                  + Tkhd.RotationMatrix[4] + " "
+                                                  + Tkhd.RotationMatrix[5] + " "
+                                                  + Tkhd.RotationMatrix[6] + " "
+                                                  + Tkhd.RotationMatrix[7] + " "
+                                                  + Tkhd.RotationMatrix[8] 
                     });
                 }
 
