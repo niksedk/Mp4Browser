@@ -2,7 +2,7 @@
 
 MP4 browser for debugging/inspecting mp4 files.
 
-Written in C#/.NET 4.8/Winforms
+Written in C#/.NET 4.8/Winforms.
 
 Has support for these boxes:
 * mdat
