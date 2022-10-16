@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Mp4Browser.Mp4.Boxes
 {
@@ -10,7 +11,7 @@ namespace Mp4Browser.Mp4.Boxes
 
         public List<string> Payload { get; set; }
 
-        public Vttc(FileStream fs, ulong maximumLength)
+        public Vttc(FileStream fs, ulong maximumLength, TreeNode root)
         {
             Payload = new List<string>();
             long max = (long)maximumLength;
@@ -20,7 +21,7 @@ namespace Mp4Browser.Mp4.Boxes
                 if (!InitializeSizeAndName(fs))
                     return;
 
-                if (Name == "payl")
+                //if (Name == "payl")
                 {
                     var length = (int)(max - fs.Position);
                     if (length > 0 && length < 5000)
@@ -31,12 +32,33 @@ namespace Mp4Browser.Mp4.Boxes
                         s = string.Join(Environment.NewLine, s.Replace("\r\n", "\n").Split('\n'));
                         Payload.Add(s.Trim());
                         count++;
+
+                        var payloadNode = new TreeNode(Name)
+                        {
+                            Tag = "Element: " + Name + " - " + Environment.NewLine +
+                                                    "Size: " + Size + Environment.NewLine +
+                                                    "Position: " + StartPosition + Environment.NewLine +
+                                                    "Payload: " + s.Trim()
+                        };
+
+                        root?.Nodes.Add(payloadNode);
                     }
                     else
                     {
                         Payload.Add(string.Empty);
                     }
                 }
+                //else
+                //{
+                //    var node = new TreeNode(Name)
+                //    {
+                //        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                //                                   "Size: " + Size + Environment.NewLine +
+                //                                   "Position: " + StartPosition + Environment.NewLine
+                //    };
+
+                //    root?.Nodes.Add(node);
+                //}
 
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }

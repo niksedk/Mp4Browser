@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Mp4Browser.Mp4.Boxes
 {
@@ -10,7 +11,7 @@ namespace Mp4Browser.Mp4.Boxes
     {
         public List<TimeSegment> Samples { get; set; }
 
-        public Trun(Stream fs, ulong maximumLength)
+        public Trun(Stream fs, ulong maximumLength, TreeNode rootNode)
         {
             Samples = new List<TimeSegment>();
             if (maximumLength <= 4)
@@ -18,8 +19,8 @@ namespace Mp4Browser.Mp4.Boxes
 
             Buffer = new byte[maximumLength - 4];
             var readCount = fs.Read(Buffer, 0, Buffer.Length);
-            if (readCount < (int)maximumLength - 4)
-                return;
+            //if (readCount < (int)maximumLength)
+            //    return;
 
             var versionAndFlags = GetUInt(0);
             var version = versionAndFlags >> 24;
@@ -78,6 +79,19 @@ namespace Mp4Browser.Mp4.Boxes
                 }
                 Samples.Add(sample);
             }
+
+            var sampleNodes = new TreeNode("Samples (Count=" + Samples.Count + ")")
+            {
+                Tag = "Samples (Count=" + Samples.Count + ")",
+            };
+            rootNode.Nodes.Add(sampleNodes);
+
+            for (int i=0; i<Samples.Count; i++)
+            {
+                var sample = Samples[i];
+                sampleNodes.Nodes.Add("Time: " + sample.TimeOffset + ", dur: " + sample.Duration);
+            }
+
         }
     }
 }

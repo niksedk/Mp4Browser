@@ -28,19 +28,30 @@ namespace Mp4Browser.Mp4.Boxes
                 }                
                 else if (Name == "vttc")
                 {
-                    root?.Nodes.Add(new TreeNode(Name)
+                    var vttcNode = new TreeNode(Name)
                     {
                         Tag = "Element: " + Name + " - " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
-                    });
-                    var vttc = new Vttc(fs, Position);
+                    };
+
+                    root?.Nodes.Add(vttcNode);
+                    var vttc = new Vttc(fs, Position, vttcNode);
                     if (vttc.Payload != null)
                     {
                         Payloads.AddRange(vttc.Payload);
                     }
                 }
                 else if (Name == "payl")
+                {
+                    root?.Nodes.Add(new TreeNode(Name)
+                    {
+                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                              "Size: " + Size + Environment.NewLine +
+                              "Position: " + StartPosition
+                    });
+                }
+                else 
                 {
                     root?.Nodes.Add(new TreeNode(Name)
                     {

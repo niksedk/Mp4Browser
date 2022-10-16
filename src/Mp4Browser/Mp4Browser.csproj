@@ -57,6 +57,7 @@
     <Compile Include="Mp4\Boxes\Mdia.cs" />
     <Compile Include="Mp4\Boxes\Minf.cs" />
     <Compile Include="Mp4\Boxes\Moof.cs" />
+    <Compile Include="Mp4\Boxes\Sidx.cs" />
     <Compile Include="Mp4\Boxes\Stsd.cs" />
     <Compile Include="Mp4\Boxes\Moov.cs" />
     <Compile Include="Mp4\Boxes\Mvhd.cs" />

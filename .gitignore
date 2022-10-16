@@ -3,3 +3,5 @@
 ################################################################################
 
 /src/Mp4Browser/bin/Debug
+/src/.vs/Mp4Browser
+/src/Mp4Browser/obj/Debug

@@ -31,9 +31,9 @@ namespace Mp4Browser.Mp4.Boxes
             {
                 CreationTime = GetUInt64(4);
                 ModificationTime = GetUInt64(12);
-                TimeScale = GetUInt(16);
-                Duration = GetUInt64(20);
-                languageIndex = 24;
+                TimeScale = GetUInt(20);
+                Duration = GetUInt64(24);
+                languageIndex = 32;
                 Quality = GetWord(26);
             }
 

@@ -19,14 +19,16 @@ namespace Mp4Browser.Mp4.Boxes
 
                 if (Name == "stbl")
                 {
-                    var stblNode = new TreeNode(Name)
+                    var stblNode = new TreeNode(Name);
+                    Stbl = new Stbl(fs, Position, timeScale, handlerType, mdia, stblNode)
                     {
-                        Tag = "Element: " + Name + " - Sample Table" + Environment.NewLine +
-                              "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition
+                        Text = "Element: " + Name + " - Sample Table" + Environment.NewLine +
+                               "Size: " + Size + Environment.NewLine +
+                               "Position: " + StartPosition
                     };
-                    Stbl = new Stbl(fs, Position, timeScale, handlerType, mdia, stblNode);
+                    stblNode.Tag = Stbl;
                     root.Nodes.Add(stblNode);
+                    
                 }
                 else if (Name == "sthd")
                 {

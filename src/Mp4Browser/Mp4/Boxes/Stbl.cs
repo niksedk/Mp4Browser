@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Windows.Forms;
 
@@ -8,14 +9,36 @@ namespace Mp4Browser.Mp4.Boxes
 {
     public class Stbl : Box
     {
+        public class TimeInfo
+        {
+            public uint SampleCount { get; set; }
+            public uint SampleDelta { get; set; }
+        }
+
         public List<string> Texts = new List<string>();
         public List<double> StartTimeCodes = new List<double>();
         public List<double> EndTimeCodes = new List<double>();
+        public List<uint> SampleSizes = new List<uint>();
         public ulong StszSampleCount = 0;
         private readonly Mdia _mdia;
+        public ulong TimeScale { get; set; }
+        public string HandlerType { get; set; }
+        public List<TimeInfo> Ssts { get; set; }
+        public List<Byte[]> TextBuffers { get; set; }
+
+        public string Text { get; set; }
+
+        public override string ToString()
+        {
+            return Text;
+        }
 
         public Stbl(Stream fs, ulong maximumLength, ulong timeScale, string handlerType, Mdia mdia, TreeNode root)
         {
+            TimeScale = timeScale;
+            HandlerType = handlerType;
+            Ssts = new List<TimeInfo>();
+            TextBuffers = new List<byte[]>();
             _mdia = mdia;
             Position = (ulong)fs.Position;
             while (fs.Position < (long)maximumLength)
@@ -37,7 +60,7 @@ namespace Mp4Browser.Mp4.Boxes
                         uint offset = GetUInt(8 + i * 4);
                         if (lastOffset + 5 < offset)
                         {
-                            var s = ReadText(fs, offset, handlerType);
+                            var s = ReadText(fs, offset, handlerType, i);
                             sbTexts.AppendLine($" {i} - {s}");
                         }
                         lastOffset = offset;
@@ -46,8 +69,8 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + " - Chunk Offset" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition + Environment.NewLine + 
-                              "Total entries: " + totalEntries + 
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "Total entries: " + totalEntries +
                               "Texts: " + sbTexts
                     });
                 }
@@ -57,20 +80,29 @@ namespace Mp4Browser.Mp4.Boxes
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
                     uint totalEntries = GetUInt(4);
+                    var sbTexts = new StringBuilder();
 
                     ulong lastOffset = 0;
                     for (int i = 0; i < totalEntries; i++)
                     {
                         ulong offset = GetUInt64(8 + i * 8);
                         if (lastOffset + 8 < offset)
-                            ReadText(fs, offset, handlerType);
+                        {
+                            var s = ReadText(fs, offset, handlerType, i);
+                            sbTexts.AppendLine($" {i} - {s}");
+                            if (s == "Amen. Dig in.")
+                                s = s;
+                        }
+
                         lastOffset = offset;
                     }
                     var co64Node = new TreeNode(Name)
                     {
                         Tag = "Element: " + Name + " - " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition 
+                              "Position: " + StartPosition +
+                              "Total entries: " + totalEntries +
+                              "Texts: " + sbTexts
                     };
                     root.Nodes.Add(co64Node);
                 }
@@ -88,6 +120,7 @@ namespace Mp4Browser.Mp4.Boxes
                         if (12 + i * 4 + 4 < Buffer.Length)
                         {
                             uint sampleSize = GetUInt(12 + i * 4);
+                            SampleSizes.Add(sampleSize);
                             sbSampleSizes.AppendLine($" {i} - Sample size: {sampleSize}");
                         }
                     }
@@ -95,7 +128,7 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + " - Sample Size Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition + Environment.NewLine + 
+                              "Position: " + StartPosition + Environment.NewLine +
                               "Sample sizes:" + Environment.NewLine +
                               sbSampleSizes
                     });
@@ -116,6 +149,7 @@ namespace Mp4Browser.Mp4.Boxes
                         {
                             uint sampleCount = GetUInt(8 + i * 8);
                             uint sampleDelta = GetUInt(12 + i * 8);
+                            Ssts.Add(new TimeInfo { SampleCount  = sampleCount, SampleDelta = sampleDelta} );
                             sbTimeToSample.AppendLine($" {i} - {sampleCount} - {sampleDelta}");
                             for (int j = 0; j < sampleCount; j++)
                             {
@@ -133,6 +167,7 @@ namespace Mp4Browser.Mp4.Boxes
                         {
                             uint sampleCount = GetUInt(8 + i * 8);
                             uint sampleDelta = GetUInt(12 + i * 8);
+                            Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
                             sbTimeToSample.AppendLine($" {i} - {sampleCount} - {sampleDelta}");
                             totalTime += sampleDelta / (double)timeScale;
                             if (StartTimeCodes.Count <= EndTimeCodes.Count)
@@ -148,7 +183,7 @@ namespace Mp4Browser.Mp4.Boxes
                               "Position: " + StartPosition + Environment.NewLine +
                               "Number of samples: " + numberOfSampleTimes + Environment.NewLine +
                               "Samples: " + Environment.NewLine +
-                                 sbTimeToSample                            
+                                 sbTimeToSample
                     });
                 }
                 else if (Name == "stsc") // sample table sample to chunk map
@@ -170,7 +205,7 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + " - Sample‐to‐Chunk" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition + Environment.NewLine + 
+                              "Position: " + StartPosition + Environment.NewLine +
                               "Number of samples: " + numberOfSampleTimes
                     });
                 }
@@ -185,13 +220,26 @@ namespace Mp4Browser.Mp4.Boxes
                     var stsd = new Stsd(fs, Position, stsdNode);
                     root.Nodes.Add(stsdNode);
                 }
+                else 
+                {
+                    var unknown = new TreeNode(Name)
+                    {
+                        Tag = "Element: " + Name + " - unkown "+ Environment.NewLine + 
+                              "Size: " + Size + Environment.NewLine +
+                              "Position: " + StartPosition
+                    };
+                    root.Nodes.Add(unknown);
+                }
 
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
         }
 
-        private string ReadText(Stream fs, ulong offset, string handlerType)
+        private string ReadText(Stream fs, ulong offset, string handlerType, int index)
         {
+            if (handlerType == "vide")
+                return string.Empty;
+
             var sb2 = new StringBuilder();
             fs.Seek((long)offset, SeekOrigin.Begin);
             var data = new byte[4];
@@ -210,6 +258,9 @@ namespace Mp4Browser.Mp4.Boxes
             }
             else
             {
+                if (index + 1 < SampleSizes.Count && SampleSizes[index + 1] <= 2)
+                    return string.Empty;
+
                 if (textSize == 0)
                 {
                     fs.Read(data, 2, 2);
@@ -248,6 +299,8 @@ namespace Mp4Browser.Mp4.Boxes
                 }
                 else
                 {
+    //                if (infoSampleSize == 2)
+                        return string.Empty;
                     Texts.Add(string.Empty);
                     sb2.Append(string.Empty);
                 }

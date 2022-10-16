@@ -72,7 +72,8 @@ namespace Mp4Browser.Mp4.Boxes
                         Tag = "Element: " + Name + " - " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
-                              "LanguageString: " + Mdhd.LanguageString
+                              "LanguageString: " + Mdhd.LanguageString + Environment.NewLine +
+                              "Timescale: " + Mdhd.TimeScale
                     });
                 }
                 fs.Seek((long)Position, SeekOrigin.Begin);

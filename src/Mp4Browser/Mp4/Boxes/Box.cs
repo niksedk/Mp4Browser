@@ -23,8 +23,15 @@ namespace Mp4Browser.Mp4.Boxes
 
         public ulong GetUInt64(int index)
         {
-            return (ulong)Buffer[index] << 56 | (ulong)Buffer[index + 1] << 48 | (ulong)Buffer[index + 2] << 40 | (ulong)Buffer[index + 3] << 32 |
-                   (ulong)Buffer[index + 4] << 24 | (ulong)Buffer[index + 5] << 16 | (ulong)Buffer[index + 6] << 8 | Buffer[index + 7];
+            try
+            {
+                return (ulong)Buffer[index] << 56 | (ulong)Buffer[index + 1] << 48 | (ulong)Buffer[index + 2] << 40 | (ulong)Buffer[index + 3] << 32 |
+                       (ulong)Buffer[index + 4] << 24 | (ulong)Buffer[index + 5] << 16 | (ulong)Buffer[index + 6] << 8 | Buffer[index + 7];
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public static ulong GetUInt64(byte[] buffer, int index)
@@ -50,9 +57,7 @@ namespace Mp4Browser.Mp4.Boxes
 
         public static string GetString(byte[] buffer, int index, int count)
         {
-            if (count <= 0)
-                return string.Empty;
-            return Encoding.UTF8.GetString(buffer, index, count);
+            return count <= 0 ? string.Empty : Encoding.UTF8.GetString(buffer, index, count);
         }
 
         internal bool InitializeSizeAndName(Stream fs)
@@ -61,7 +66,10 @@ namespace Mp4Browser.Mp4.Boxes
             Buffer = new byte[8];
             var bytesRead = fs.Read(Buffer, 0, Buffer.Length);
             if (bytesRead < Buffer.Length)
+            {
                 return false;
+            }
+
             Size = GetUInt(0);
             Name = GetString(4, 4);
 
@@ -69,6 +77,7 @@ namespace Mp4Browser.Mp4.Boxes
             {
                 Size = (ulong)(fs.Length - fs.Position);
             }
+
             if (Size == 1)
             {
                 bytesRead = fs.Read(Buffer, 0, Buffer.Length);
@@ -76,6 +85,7 @@ namespace Mp4Browser.Mp4.Boxes
                     return false;
                 Size = GetUInt64(0) - 8;
             }
+
             Position = (ulong)fs.Position + Size - 8;
             return true;
         }
@@ -83,8 +93,11 @@ namespace Mp4Browser.Mp4.Boxes
         public static string ByteArrayToString(byte[] ba)
         {
             var hex = new StringBuilder(ba.Length * 3);
-            foreach (byte b in ba)
+            foreach (var b in ba)
+            {
                 hex.AppendFormat("{0:x2} ", b);
+            }
+
             return hex.ToString().TrimEnd();
         }
 

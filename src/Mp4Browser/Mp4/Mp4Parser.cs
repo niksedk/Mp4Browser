@@ -134,7 +134,7 @@ namespace Mp4Browser.Mp4
 
                     if (Name == "moov")
                     {
-                       
+
                     }
                     else if (Name == "mdat")
                     {
@@ -145,8 +145,8 @@ namespace Mp4Browser.Mp4
                         var s = Encoding.UTF8.GetString(buffer);
                         var fName = Path.GetFileNameWithoutExtension(firstFileName);
                         mdatCount++;
-                        fName = Path.Combine(Path.GetDirectoryName(firstFileName),  $"{fName}-{mdatCount:00}.xml");
-                        File.WriteAllText(fName, s, Encoding.UTF8);                        
+                        fName = Path.Combine(Path.GetDirectoryName(firstFileName), $"{fName}-{mdatCount:00}.xml");
+                        File.WriteAllText(fName, s, Encoding.UTF8);
                     }
                     else if (Name == "moof")
                     {
@@ -174,15 +174,17 @@ namespace Mp4Browser.Mp4
         {
             var samples = new List<TimeSegment>();
             var payloads = new List<string>();
-            int count = 0;
+            var count = 0;
             Position = 0;
             fs.Seek(0, SeekOrigin.Begin);
-            bool moreBytes = true;
+            var moreBytes = true;
             while (moreBytes)
             {
                 moreBytes = InitializeSizeAndName(fs);
                 if (Size < 8)
+                {
                     return;
+                }
 
                 if (Name == "moov")
                 {
@@ -208,6 +210,8 @@ namespace Mp4Browser.Mp4
                     {
                         payloads.AddRange(mdat.Payloads);
                     }
+
+                    node.Text += $" (Count={node.Nodes.Count})";
                 }
                 else if (Name == "moof")
                 {
@@ -223,6 +227,35 @@ namespace Mp4Browser.Mp4
                     {
                         samples.AddRange(Moof.Traf.Trun.Samples);
                     }
+                }
+                else if (Name == "sidx")
+                {
+                    var sidx = new Sidx(fs);
+                    var referenceItems = new StringBuilder();
+                    for (var index = 0; index < sidx.ReferenceItems.Count; index++)
+                    {
+                        var item = sidx.ReferenceItems[index];
+                        referenceItems.AppendLine($"- ReferenceType[{index}]: {item.ReferenceType}");
+                        referenceItems.AppendLine($"- ReferencedSize[{index}]: {item.ReferencedSize}");
+                        referenceItems.AppendLine($"- SubSegmentDuration[{index}]: {item.SubSegmentDuration}");
+                        referenceItems.AppendLine($"- StartsWithSap[{index}]: {item.StartsWithSap}");
+                        referenceItems.AppendLine($"- SapType[{index}]: {item.SapType}");
+                        referenceItems.AppendLine($"- SapDeltaTime[{index}]: {item.SapDeltaTime}");
+                    }
+
+                    var node = new TreeNode(Name)
+                    {
+                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                              "Size: " + Size + Environment.NewLine +
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "RefernceId: " + sidx.ReferenceId + Environment.NewLine +
+                              "TimeScale: " + sidx.TimeScale + Environment.NewLine +
+                              "EarliestPresentationTime :" + sidx.EarliestPresentationTime + Environment.NewLine +
+                              "FirstOffset :" + sidx.FirstOffset + Environment.NewLine +
+                              "ReferenceCount:" + sidx.ReferenceCount + Environment.NewLine +
+                              referenceItems.ToString()
+                    };
+                    treeView?.Nodes.Add(node);
                 }
                 else
                 {
