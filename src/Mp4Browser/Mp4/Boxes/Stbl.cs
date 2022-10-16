@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Windows.Forms;
 
@@ -70,8 +69,8 @@ namespace Mp4Browser.Mp4.Boxes
                         Tag = "Element: " + Name + " - Chunk Offset" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
-                              "Total entries: " + totalEntries +
-                              "Texts: " + sbTexts
+                              "Total entries: " + totalEntries + Environment.NewLine +
+                              "Texts: " + Environment.NewLine + sbTexts
                     });
                 }
                 else if (Name == "co64") // 64-bit
@@ -100,9 +99,9 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + " - " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition +
-                              "Total entries: " + totalEntries +
-                              "Texts: " + sbTexts
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "Total entries: " + totalEntries + Environment.NewLine +
+                              "Texts: " + Environment.NewLine + sbTexts
                     };
                     root.Nodes.Add(co64Node);
                 }

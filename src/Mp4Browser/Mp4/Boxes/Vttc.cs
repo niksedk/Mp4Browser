@@ -24,7 +24,7 @@ namespace Mp4Browser.Mp4.Boxes
 
                 //if (Name == "payl")
                 {
-                    var length = (int)(max - fs.Position);
+                    var length = (int)Size - 8;
                     if (length > 0 && length < 5000)
                     {
                         var buffer = new byte[length];
@@ -51,20 +51,10 @@ namespace Mp4Browser.Mp4.Boxes
                         Payload.Add(string.Empty);
                     }
                 }
-                //else
-                //{
-                //    var node = new TreeNode(Name)
-                //    {
-                //        Tag = "Element: " + Name + " - " + Environment.NewLine +
-                //                                   "Size: " + Size + Environment.NewLine +
-                //                                   "Position: " + StartPosition + Environment.NewLine
-                //    };
-
-                //    root?.Nodes.Add(node);
-                //}
 
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
+
             if (count == 0)
             {
                 Payload.Add(null);
