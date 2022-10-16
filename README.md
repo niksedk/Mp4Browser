@@ -1,6 +1,6 @@
 # Mp4Browser
 
-MP4 browser for debugging/inspecting mp4 files
+MP4 browser for debugging/inspecting mp4 files written in C#.
 
 Has support for these boxes:
 * box
