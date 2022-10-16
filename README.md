@@ -21,4 +21,4 @@ Has support for these boxes:
 * trun
 * vttc
 
-(Mp4Browser.png)
+![](Mp4Browser.png)
