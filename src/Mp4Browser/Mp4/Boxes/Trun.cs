@@ -27,7 +27,7 @@ namespace Mp4Browser.Mp4.Boxes
             var flags = versionAndFlags & 0xFFFFFF;
 
             var sampleCount = GetUInt(4);
-            int pos = 8;
+            var pos = 8;
 
             if ((flags & 0x000001) > 0)
             {
@@ -55,13 +55,17 @@ namespace Mp4Browser.Mp4.Boxes
                 if (pos > Buffer.Length - 4)
                     return;
 
-                // skip "sample_size" if present
+                // read "sample_size" if present
                 if ((flags & 0x000200) > 0)
                 {
+                    sample.Size = GetUInt(pos);
                     pos += 4;
                 }
+
                 if (pos > Buffer.Length - 4)
+                {
                     return;
+                }
 
                 // skip "sample_flags" if present
                 if ((flags & 0x000400) > 0)
@@ -89,9 +93,8 @@ namespace Mp4Browser.Mp4.Boxes
             for (int i=0; i<Samples.Count; i++)
             {
                 var sample = Samples[i];
-                sampleNodes.Nodes.Add("Time: " + sample.TimeOffset + ", dur: " + sample.Duration);
+                sampleNodes.Nodes.Add("Time: " + sample.TimeOffset + ", size: " + sample.Size + ", dur: " + sample.Duration);
             }
-
         }
     }
 }

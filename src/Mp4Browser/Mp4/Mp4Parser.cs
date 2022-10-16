@@ -130,7 +130,9 @@ namespace Mp4Browser.Mp4
                 {
                     moreBytes = InitializeSizeAndName(fs);
                     if (Size < 8)
+                    {
                         return mdatCount;
+                    }
 
                     if (Name == "moov")
                     {
@@ -153,12 +155,18 @@ namespace Mp4Browser.Mp4
                     }
                     count++;
                     if (count > 1000)
+                    {
                         break;
+                    }
 
                     if (Position > (ulong)fs.Length)
+                    {
                         break;
+                    }
+
                     fs.Seek((long)Position, SeekOrigin.Begin);
                 }
+
                 fs.Close();
             }
             return mdatCount;
@@ -217,7 +225,7 @@ namespace Mp4Browser.Mp4
                 {
                     var node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Movie Fragment" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -245,7 +253,7 @@ namespace Mp4Browser.Mp4
 
                     var node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - " + GetFriendlyBoxName(Name) + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "RefernceId: " + sidx.ReferenceId + Environment.NewLine +
@@ -261,7 +269,7 @@ namespace Mp4Browser.Mp4
                 {
                     treeView?.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - " + GetFriendlyBoxName(Name) + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     });
@@ -276,6 +284,17 @@ namespace Mp4Browser.Mp4
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
             fs.Close();
+        }
+
+        private static string GetFriendlyBoxName(string name)
+        {
+            switch (name)
+            {
+                case "ftyp": return "File Type";
+                case "styp": return "Segment Type";
+                case "sidx": return "Segment Index";
+                default: return string.Empty;
+            }
         }
 
         internal double FrameRate

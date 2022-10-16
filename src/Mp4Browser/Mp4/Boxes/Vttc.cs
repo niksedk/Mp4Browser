@@ -10,6 +10,7 @@ namespace Mp4Browser.Mp4.Boxes
     {
 
         public List<string> Payload { get; set; }
+        public int PayloadSize { get; set; }
 
         public Vttc(FileStream fs, ulong maximumLength, TreeNode root)
         {
@@ -32,6 +33,8 @@ namespace Mp4Browser.Mp4.Boxes
                         s = string.Join(Environment.NewLine, s.Replace("\r\n", "\n").Split('\n'));
                         Payload.Add(s.Trim());
                         count++;
+
+                        PayloadSize += (int)Size;
 
                         var payloadNode = new TreeNode(Name)
                         {
