@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Mp4Browser.Mp4.Boxes
 {
@@ -27,6 +28,11 @@ namespace Mp4Browser.Mp4.Boxes
             else
             {
                 BaseMediaDecodeTime = GetUInt64(8);
+            }
+
+            if (BaseMediaDecodeTime > 0)
+            {
+                Console.WriteLine("Baseline found: " + BaseMediaDecodeTime);
             }
         }
     }

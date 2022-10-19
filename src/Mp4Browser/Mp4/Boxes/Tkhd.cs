@@ -8,6 +8,16 @@ namespace Mp4Browser.Mp4.Boxes
         public readonly ulong Duration;
         public readonly uint Width;
         public readonly uint Height;
+
+        // Rotation Matrix
+        //             a   b   u
+        // x y 1  *    c   d   v  = x y 1
+        //             tx  ty  w
+        //All values in the matrix are 32-bit fixed-point numbers divided as 16.16, except for the {u, v, w} column,
+        //which contains 32-bit fixed-point numbers divided as 2.30.Figure 4 - 1(page 200) depicts how QuickTime
+        //uses matrices to transform displayed objects.
+        //
+
         public float[] RotationMatrix; // UVW rotate mapping
 
         //version           // 8 unsigned bit
@@ -54,15 +64,16 @@ namespace Mp4Browser.Mp4.Boxes
             }
 
             RotationMatrix = new float[9];
-            RotationMatrix[0] = GetWord(40 + addToIndex64Bit);
-            RotationMatrix[1] = GetWord(44 + addToIndex64Bit);
-            RotationMatrix[2] = GetWord(48 + addToIndex64Bit);
-            RotationMatrix[3] = GetWord(52 + addToIndex64Bit);
-            RotationMatrix[4] = GetWord(56 + addToIndex64Bit);
-            RotationMatrix[5] = GetWord(60 + addToIndex64Bit);
-            RotationMatrix[6] = GetWord(64 + addToIndex64Bit);
-            RotationMatrix[7] = GetWord(68 + addToIndex64Bit);
-            RotationMatrix[8] = GetWord(72 + addToIndex64Bit);
+            //TODO: fix reading with correct # before/after decimal
+            RotationMatrix[0] = GetWord(40 + addToIndex64Bit); // 16.16
+            RotationMatrix[1] = GetWord(44 + addToIndex64Bit); // 16.16
+            RotationMatrix[2] = GetWord(48 + addToIndex64Bit); // 2.30
+            RotationMatrix[3] = GetWord(52 + addToIndex64Bit); // 16.16
+            RotationMatrix[4] = GetWord(56 + addToIndex64Bit); // 16.16
+            RotationMatrix[5] = GetWord(60 + addToIndex64Bit); // 2.30
+            RotationMatrix[6] = GetWord(64 + addToIndex64Bit); // 16.16
+            RotationMatrix[7] = GetWord(68 + addToIndex64Bit); // 16.16
+            RotationMatrix[8] = GetWord(72 + addToIndex64Bit); // 2.30
 
             Width = (uint)GetWord(76 + addToIndex64Bit); // skip decimals
             Height = (uint)GetWord(80 + addToIndex64Bit); // skip decimals

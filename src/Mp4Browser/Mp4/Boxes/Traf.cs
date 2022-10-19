@@ -9,6 +9,7 @@ namespace Mp4Browser.Mp4.Boxes
 
         public Trun Trun { get; set; }
         public Tfdt Tfdt { get; set; }
+        public Tfhd Tfhd { get; set; }
 
         public Traf(Stream fs, ulong maximumLength, TreeNode root)
         {
@@ -22,7 +23,7 @@ namespace Mp4Browser.Mp4.Boxes
                 if (Size < 100 && Size > 8)
                 {
                     var oldP = fs.Position;
-                    var buf = new byte[Size -8];
+                    var buf = new byte[Size - 8];
                     fs.Read(buf, 0, buf.Length);
                     fs.Position = oldP;
                     data = Environment.NewLine + "Data: " + ByteArrayToString(buf);
@@ -45,10 +46,28 @@ namespace Mp4Browser.Mp4.Boxes
                     Tfdt = new Tfdt(fs, Size);
                     root.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Track Fragment Decode Time" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition
-                              + data
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "BaseMediaDecodeTime: " + Tfdt.BaseMediaDecodeTime + Environment.NewLine +
+                              data
+                    });
+                }
+                else if (Name == "tfhd")
+                {
+                    Tfhd = new Tfhd(fs, Size);
+                    root.Nodes.Add(new TreeNode(Name)
+                    {
+                        Tag = "Element: " + Name + " - Fragment Header" + Environment.NewLine +
+                              "Size: " + Size + Environment.NewLine +
+                              "Position: " + StartPosition + Environment.NewLine +
+                              "TrackId: " + Tfhd.TrackId + Environment.NewLine +
+                              "BaseDataOffset: " + Tfhd.BaseDataOffset + Environment.NewLine +
+                              "SampleDescriptionIndex: " + Tfhd.SampleDescriptionIndex + Environment.NewLine +
+                              "DefaultSampleDuration: " + Tfhd.DefaultSampleDuration + Environment.NewLine +
+                              "DefaultSampleSize: " + Tfhd.DefaultSampleSize + Environment.NewLine +
+                              "DefaultSampleFlags: " + Tfhd.DefaultSampleFlags + Environment.NewLine +
+                              data
                     });
                 }
                 else
@@ -57,8 +76,8 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         Tag = "Element: " + Name + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition
-                          + data
+                              "Position: " + StartPosition + Environment.NewLine +
+                              data
                     });
                 }
 

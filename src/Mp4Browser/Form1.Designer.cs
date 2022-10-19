@@ -65,12 +65,12 @@
             this.textBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxInfo.Location = new System.Drawing.Point(475, 40);
+            this.textBoxInfo.Location = new System.Drawing.Point(475, 52);
             this.textBoxInfo.Multiline = true;
             this.textBoxInfo.Name = "textBoxInfo";
             this.textBoxInfo.ReadOnly = true;
             this.textBoxInfo.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxInfo.Size = new System.Drawing.Size(250, 440);
+            this.textBoxInfo.Size = new System.Drawing.Size(250, 428);
             this.textBoxInfo.TabIndex = 2;
             // 
             // treeView1
@@ -78,9 +78,9 @@
             this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.treeView1.HideSelection = false;
-            this.treeView1.Location = new System.Drawing.Point(13, 40);
+            this.treeView1.Location = new System.Drawing.Point(13, 52);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(456, 440);
+            this.treeView1.Size = new System.Drawing.Size(456, 428);
             this.treeView1.TabIndex = 3;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
