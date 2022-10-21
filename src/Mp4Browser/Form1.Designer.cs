@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.buttonOpenFile = new System.Windows.Forms.Button();
             this.textBoxFileName = new System.Windows.Forms.TextBox();
             this.textBoxInfo = new System.Windows.Forms.TextBox();
@@ -42,9 +43,10 @@
             // buttonOpenFile
             // 
             this.buttonOpenFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOpenFile.Location = new System.Drawing.Point(694, 11);
+            this.buttonOpenFile.Location = new System.Drawing.Point(925, 13);
+            this.buttonOpenFile.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonOpenFile.Name = "buttonOpenFile";
-            this.buttonOpenFile.Size = new System.Drawing.Size(31, 23);
+            this.buttonOpenFile.Size = new System.Drawing.Size(41, 28);
             this.buttonOpenFile.TabIndex = 0;
             this.buttonOpenFile.Text = "...";
             this.buttonOpenFile.UseVisualStyleBackColor = true;
@@ -54,10 +56,11 @@
             // 
             this.textBoxFileName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxFileName.Location = new System.Drawing.Point(13, 13);
+            this.textBoxFileName.Location = new System.Drawing.Point(17, 16);
+            this.textBoxFileName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxFileName.Name = "textBoxFileName";
             this.textBoxFileName.ReadOnly = true;
-            this.textBoxFileName.Size = new System.Drawing.Size(675, 20);
+            this.textBoxFileName.Size = new System.Drawing.Size(899, 23);
             this.textBoxFileName.TabIndex = 1;
             // 
             // textBoxInfo
@@ -65,24 +68,30 @@
             this.textBoxInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxInfo.Location = new System.Drawing.Point(475, 52);
+            this.textBoxInfo.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxInfo.Location = new System.Drawing.Point(343, 50);
+            this.textBoxInfo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxInfo.Multiline = true;
             this.textBoxInfo.Name = "textBoxInfo";
             this.textBoxInfo.ReadOnly = true;
             this.textBoxInfo.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxInfo.Size = new System.Drawing.Size(250, 428);
+            this.textBoxInfo.Size = new System.Drawing.Size(622, 540);
             this.textBoxInfo.TabIndex = 2;
             // 
             // treeView1
             // 
             this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.treeView1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.treeView1.HideSelection = false;
-            this.treeView1.Location = new System.Drawing.Point(13, 52);
+            this.treeView1.Location = new System.Drawing.Point(17, 50);
+            this.treeView1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(456, 428);
+            this.treeView1.Size = new System.Drawing.Size(318, 540);
             this.treeView1.TabIndex = 3;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            this.treeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
+            this.treeView1.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView1_DragEnter);
             // 
             // openFileDialog1
             // 
@@ -91,9 +100,10 @@
             // buttonSaveMDAT
             // 
             this.buttonSaveMDAT.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonSaveMDAT.Location = new System.Drawing.Point(13, 486);
+            this.buttonSaveMDAT.Location = new System.Drawing.Point(17, 598);
+            this.buttonSaveMDAT.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonSaveMDAT.Name = "buttonSaveMDAT";
-            this.buttonSaveMDAT.Size = new System.Drawing.Size(158, 23);
+            this.buttonSaveMDAT.Size = new System.Drawing.Size(211, 28);
             this.buttonSaveMDAT.TabIndex = 4;
             this.buttonSaveMDAT.Text = "Save all MDAT elements...";
             this.buttonSaveMDAT.UseVisualStyleBackColor = true;
@@ -103,18 +113,20 @@
             // 
             this.labelStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelStatus.AutoSize = true;
-            this.labelStatus.Location = new System.Drawing.Point(177, 491);
+            this.labelStatus.Location = new System.Drawing.Point(236, 604);
+            this.labelStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(59, 13);
+            this.labelStatus.Size = new System.Drawing.Size(78, 17);
             this.labelStatus.TabIndex = 5;
             this.labelStatus.Text = "labelStatus";
             // 
             // buttonSaveSubtitle
             // 
             this.buttonSaveSubtitle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonSaveSubtitle.Location = new System.Drawing.Point(567, 486);
+            this.buttonSaveSubtitle.Location = new System.Drawing.Point(756, 598);
+            this.buttonSaveSubtitle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonSaveSubtitle.Name = "buttonSaveSubtitle";
-            this.buttonSaveSubtitle.Size = new System.Drawing.Size(158, 23);
+            this.buttonSaveSubtitle.Size = new System.Drawing.Size(211, 28);
             this.buttonSaveSubtitle.TabIndex = 6;
             this.buttonSaveSubtitle.Text = "Save subtitle...";
             this.buttonSaveSubtitle.UseVisualStyleBackColor = true;
@@ -122,9 +134,9 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(737, 512);
+            this.ClientSize = new System.Drawing.Size(983, 630);
             this.Controls.Add(this.buttonSaveSubtitle);
             this.Controls.Add(this.labelStatus);
             this.Controls.Add(this.buttonSaveMDAT);
@@ -132,9 +144,14 @@
             this.Controls.Add(this.textBoxInfo);
             this.Controls.Add(this.textBoxFileName);
             this.Controls.Add(this.buttonOpenFile);
-            this.MinimumSize = new System.Drawing.Size(640, 400);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MinimumSize = new System.Drawing.Size(848, 483);
             this.Name = "Form1";
             this.Text = "C# MP4 browser";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

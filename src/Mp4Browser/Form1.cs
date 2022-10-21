@@ -18,31 +18,37 @@ namespace Mp4Browser
             buttonSaveMDAT.Enabled = false;
             labelStatus.Text = string.Empty;
             buttonSaveSubtitle.Visible = false;
+            treeView1.AllowDrop = true;
         }
 
         private void buttonOpenFile_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
-                textBoxFileName.Text = openFileDialog1.FileName;
-                treeView1.Nodes.Clear();
-                treeView1.BeginUpdate();
-                _fileName = openFileDialog1.FileName;
-                labelStatus.Text = $"Opening {_fileName}...";
-                Refresh();
-                Application.DoEvents();
-                var parser = new Mp4Parser(openFileDialog1.FileName, treeView1);
-                buttonSaveMDAT.Enabled = true;
-                treeView1.EndUpdate();
-                labelStatus.Text = string.Empty;
-                Text = $"{Title} - {_fileName}";
-                buttonSaveSubtitle.Visible = false;
+                OpenFile(openFileDialog1.FileName);
             }
+        }
+
+        private void OpenFile(string fileName)
+        {
+            textBoxFileName.Text = fileName;
+            treeView1.Nodes.Clear();
+            treeView1.BeginUpdate();
+            _fileName = fileName;
+            labelStatus.Text = $"Opening {_fileName}...";
+            Refresh();
+            Application.DoEvents();
+            var parser = new Mp4Parser(fileName, treeView1);
+            buttonSaveMDAT.Enabled = true;
+            treeView1.EndUpdate();
+            labelStatus.Text = string.Empty;
+            Text = $"{Title} - {_fileName}";
+            buttonSaveSubtitle.Visible = false;
         }
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            textBoxInfo.Text = e.Node?.Tag?.ToString()  + (e.Node.Nodes.Count > 0 ? (Environment.NewLine + "Child nodes: " + e.Node.Nodes.Count) : string.Empty);
+            textBoxInfo.Text = e.Node?.Tag + (e.Node.Nodes.Count > 0 ? (Environment.NewLine + "Child nodes: " + e.Node.Nodes.Count) : string.Empty);
             if (e.Node.Tag is Stbl)
             {
                 buttonSaveSubtitle.Visible = true;
@@ -121,15 +127,44 @@ namespace Mp4Browser
             }
         }
 
-        private string MillisecondsToSrt(double time)
+        private static string MillisecondsToSrt(double time)
         {
             var ts = TimeSpan.FromSeconds(time);
-            string decimalSeparator = ",";
-            string s = $"{ts.Hours + ts.Days * 24:00}:{ts.Minutes:00}:{ts.Seconds:00}{decimalSeparator}{ts.Milliseconds:000}";
+            const string decimalSeparator = ",";
+            var s = $"{ts.Hours + ts.Days * 24:00}:{ts.Minutes:00}:{ts.Seconds:00}{decimalSeparator}{ts.Milliseconds:000}";
 
             if (time >= 0)
+            {
                 return s;
+            }
+
             return "-" + s.Replace("-", string.Empty);
+        }
+
+        private void treeView1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop, false))
+            {
+                e.Effect = DragDropEffects.All;
+            }
+        }
+
+        private void treeView1_DragDrop(object sender, DragEventArgs e)
+        {
+            var fileNames = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (fileNames.Length > 0)
+            {
+                OpenFile(fileNames[0]);
+            }
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Modifiers == Keys.Control && e.KeyCode == Keys.O)
+            {
+                e.SuppressKeyPress = true;
+                buttonOpenFile_Click(null, null);
+            }
         }
     }
 }

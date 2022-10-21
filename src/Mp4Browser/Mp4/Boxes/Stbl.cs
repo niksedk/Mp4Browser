@@ -8,6 +8,13 @@ namespace Mp4Browser.Mp4.Boxes
 {
     public class Stbl : Box
     {
+        public class SampleToChunkMap
+        {
+            public uint FirstChunk { get; set; }
+            public uint SamplesPerChunk { get; set; }
+            public uint SampleDescriptionIndex { get; set; }
+        }
+
         public class TimeInfo
         {
             public uint SampleCount { get; set; }
@@ -23,7 +30,8 @@ namespace Mp4Browser.Mp4.Boxes
         public ulong TimeScale { get; set; }
         public string HandlerType { get; set; }
         public List<TimeInfo> Ssts { get; set; }
-        public List<Byte[]> TextBuffers { get; set; }
+        public List<SampleToChunkMap> Stsc { get; set; }
+        public List<byte[]> TextBuffers { get; set; }
 
         public string Text { get; set; }
 
@@ -37,6 +45,7 @@ namespace Mp4Browser.Mp4.Boxes
             TimeScale = timeScale;
             HandlerType = handlerType;
             Ssts = new List<TimeInfo>();
+            Stsc = new List<SampleToChunkMap>();
             TextBuffers = new List<byte[]>();
             _mdia = mdia;
             Position = (ulong)fs.Position;
@@ -50,17 +59,21 @@ namespace Mp4Browser.Mp4.Boxes
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
-                    uint totalEntries = GetUInt(4);
+                    var totalEntries = GetUInt(4);
                     var sbTexts = new StringBuilder();
 
                     uint lastOffset = 0;
-                    for (int i = 0; i < totalEntries; i++)
+                    for (var i = 0; i < totalEntries; i++)
                     {
-                        uint offset = GetUInt(8 + i * 4);
+                        var offset = GetUInt(8 + i * 4);
                         if (lastOffset + 5 < offset)
                         {
                             var s = ReadText(fs, offset, handlerType, i);
-                            sbTexts.AppendLine($" {i} - {s}");
+                            sbTexts.AppendLine($" {i,4} - {offset,9} - {s}");
+                        }
+                        else
+                        {
+                            sbTexts.AppendLine($" {i,4} - {offset,9} - ?");
                         }
                         lastOffset = offset;
                     }
@@ -70,7 +83,9 @@ namespace Mp4Browser.Mp4.Boxes
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Total entries: " + totalEntries + Environment.NewLine +
-                              "Texts: " + Environment.NewLine + sbTexts
+                              "Texts: " + Environment.NewLine +
+                              "[   # - Offset - Text]" + Environment.NewLine +
+                              sbTexts
                     });
                 }
                 else if (Name == "co64") // 64-bit
@@ -78,28 +93,34 @@ namespace Mp4Browser.Mp4.Boxes
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
-                    uint totalEntries = GetUInt(4);
+                    var totalEntries = GetUInt(4);
                     var sbTexts = new StringBuilder();
 
                     ulong lastOffset = 0;
-                    for (int i = 0; i < totalEntries; i++)
+                    for (var i = 0; i < totalEntries; i++)
                     {
-                        ulong offset = GetUInt64(8 + i * 8);
+                        var offset = GetUInt64(8 + i * 8);
                         if (lastOffset + 8 < offset)
                         {
                             var s = ReadText(fs, offset, handlerType, i);
-                            sbTexts.AppendLine($" {i} - {s}");
+                            sbTexts.AppendLine($" {i,4} - {offset,9} - {s}");
+                        }
+                        else
+                        {
+                            sbTexts.AppendLine($" {i,4} - {offset,9} - ?");
                         }
 
                         lastOffset = offset;
                     }
                     var co64Node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Chunk Offset Box " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Total entries: " + totalEntries + Environment.NewLine +
-                              "Texts: " + Environment.NewLine + sbTexts
+                              "Texts: " + Environment.NewLine +
+                              "[# - Offset - Text]" + Environment.NewLine +
+                              sbTexts
                     };
                     root.Nodes.Add(co64Node);
                 }
@@ -109,16 +130,16 @@ namespace Mp4Browser.Mp4.Boxes
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
-                    uint uniformSizeOfEachSample = GetUInt(4);
-                    uint numberOfSampleSizes = GetUInt(8);
+                    var uniformSizeOfEachSample = GetUInt(4);
+                    var numberOfSampleSizes = GetUInt(8);
                     StszSampleCount = numberOfSampleSizes;
-                    for (int i = 0; i < numberOfSampleSizes; i++)
+                    for (var i = 0; i < numberOfSampleSizes; i++)
                     {
                         if (12 + i * 4 + 4 < Buffer.Length)
                         {
-                            uint sampleSize = GetUInt(12 + i * 4);
+                            var sampleSize = GetUInt(12 + i * 4);
                             SampleSizes.Add(sampleSize);
-                            sbSampleSizes.AppendLine($" {i} - Sample size: {sampleSize}");
+                            sbSampleSizes.AppendLine($" {i,4} - {sampleSize, 4}");
                         }
                     }
                     root.Nodes.Add(new TreeNode(Name)
@@ -127,6 +148,7 @@ namespace Mp4Browser.Mp4.Boxes
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Sample sizes:" + Environment.NewLine +
+                              "[   # - SampleSize]" + Environment.NewLine +
                               sbSampleSizes
                     });
                 }
@@ -137,22 +159,25 @@ namespace Mp4Browser.Mp4.Boxes
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
-                    uint numberOfSampleTimes = GetUInt(4);
+                    var numberOfSampleTimes = GetUInt(4);
                     double totalTime = 0;
                     var sbTimeToSample = new StringBuilder();
                     if (_mdia.IsClosedCaption)
                     {
-                        for (int i = 0; i < numberOfSampleTimes; i++)
+                        for (var i = 0; i < numberOfSampleTimes; i++)
                         {
-                            uint sampleCount = GetUInt(8 + i * 8);
-                            uint sampleDelta = GetUInt(12 + i * 8);
-                            Ssts.Add(new TimeInfo { SampleCount  = sampleCount, SampleDelta = sampleDelta} );
+                            var sampleCount = GetUInt(8 + i * 8);
+                            var sampleDelta = GetUInt(12 + i * 8);
+                            Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
                             sbTimeToSample.AppendLine($" {i} - {sampleCount} - {sampleDelta}");
-                            for (int j = 0; j < sampleCount; j++)
+                            for (var j = 0; j < sampleCount; j++)
                             {
                                 totalTime += sampleDelta / (double)timeScale;
                                 if (StartTimeCodes.Count > 0)
+                                {
                                     EndTimeCodes[EndTimeCodes.Count - 1] = totalTime - 0.001;
+                                }
+
                                 StartTimeCodes.Add(totalTime);
                                 EndTimeCodes.Add(totalTime + 2.5);
                             }
@@ -160,26 +185,31 @@ namespace Mp4Browser.Mp4.Boxes
                     }
                     else
                     {
-                        for (int i = 0; i < numberOfSampleTimes; i++)
+                        for (var i = 0; i < numberOfSampleTimes; i++)
                         {
-                            uint sampleCount = GetUInt(8 + i * 8);
-                            uint sampleDelta = GetUInt(12 + i * 8);
+                            var sampleCount = GetUInt(8 + i * 8);
+                            var sampleDelta = GetUInt(12 + i * 8);
                             Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
-                            sbTimeToSample.AppendLine($" {i} - {sampleCount} - {sampleDelta}");
+                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount,4} - {sampleDelta}");
                             totalTime += sampleDelta / (double)timeScale;
                             if (StartTimeCodes.Count <= EndTimeCodes.Count)
+                            {
                                 StartTimeCodes.Add(totalTime);
+                            }
                             else
+                            {
                                 EndTimeCodes.Add(totalTime);
+                            }
                         }
                     }
                     root.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Decoding, Time to Sample" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Decoding, Time to Sample Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Number of samples: " + numberOfSampleTimes + Environment.NewLine +
                               "Samples: " + Environment.NewLine +
+                              "[   # - SampleCount - SampleDelta]" + Environment.NewLine +
                                  sbTimeToSample
                     });
                 }
@@ -188,22 +218,31 @@ namespace Mp4Browser.Mp4.Boxes
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
-                    uint numberOfSampleTimes = GetUInt(4);
-                    for (int i = 0; i < numberOfSampleTimes; i++)
+                    var numberOfSampleTimes = GetUInt(4);
+                    var stscSb = new StringBuilder();
+                    for (var i = 0; i < numberOfSampleTimes; i++)
                     {
                         if (16 + i * 12 + 4 < Buffer.Length)
                         {
-                            uint firstChunk = GetUInt(8 + i * 12);
-                            uint samplesPerChunk = GetUInt(12 + i * 12);
-                            uint sampleDescriptionIndex = GetUInt(16 + i * 12);
+                            var map = new SampleToChunkMap
+                            {
+                                FirstChunk = GetUInt(8 + i * 12),
+                                SamplesPerChunk = GetUInt(12 + i * 12),
+                                SampleDescriptionIndex = GetUInt(16 + i * 12),
+                            };
+                            Stsc.Add(map);
+                            stscSb.AppendLine($"{map.FirstChunk,4} - {map.SamplesPerChunk,4} - {map.SampleDescriptionIndex,4}");
                         }
                     }
+
                     root.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Sample‐to‐Chunk" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Sample‐to‐Chunk Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
-                              "Number of samples: " + numberOfSampleTimes
+                              "Number of samples: " + numberOfSampleTimes + Environment.NewLine +
+                              "[FirstChunk - SamplesPerChunk - SampleDescriptionIndex]" + Environment.NewLine +
+                              stscSb,
                     });
                 }
                 else if (Name == "stsd")
@@ -217,11 +256,11 @@ namespace Mp4Browser.Mp4.Boxes
                     var stsd = new Stsd(fs, Position, stsdNode);
                     root.Nodes.Add(stsdNode);
                 }
-                else 
+                else
                 {
                     var unknown = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - unkown "+ Environment.NewLine + 
+                        Tag = "Element: " + Name + " - unkown " + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -296,17 +335,20 @@ namespace Mp4Browser.Mp4.Boxes
                 }
                 else
                 {
-    //                if (infoSampleSize == 2)
-                        return string.Empty;
+                    //                if (infoSampleSize == 2)
+                    return string.Empty;
                     Texts.Add(string.Empty);
                     sb2.Append(string.Empty);
                 }
             }
+
             var resultSb = new StringBuilder();
-            foreach (char ch in sb2.ToString())
+            foreach (var ch in sb2.ToString())
             {
                 if (!char.IsControl(ch))
+                {
                     resultSb.Append(ch);
+                }
                 else
                 {
                     resultSb.Append(" ");

@@ -16,13 +16,15 @@ namespace Mp4Browser.Mp4.Boxes
             while (fs.Position < (long)maximumLength)
             {
                 if (!InitializeSizeAndName(fs))
+                {
                     return;
+                }
 
                 if (Name == "mdia")
                 {
                     var mdiaNode = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Media Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -34,7 +36,7 @@ namespace Mp4Browser.Mp4.Boxes
                     Tkhd = new Tkhd(fs);
                     root.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Track Header Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "TrackId: " + Tkhd.TrackId + Environment.NewLine +
@@ -56,6 +58,5 @@ namespace Mp4Browser.Mp4.Boxes
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
         }
-
     }
 }

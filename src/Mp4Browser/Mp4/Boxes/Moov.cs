@@ -23,7 +23,7 @@ namespace Mp4Browser.Mp4.Boxes
                 {
                     var trakNode = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Track Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -40,7 +40,7 @@ namespace Mp4Browser.Mp4.Boxes
                     Mvhd = new Mvhd(fs);
                     root?.Nodes.Add(new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - " + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Movie Header Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Timescale: " + Mvhd.TimeScale

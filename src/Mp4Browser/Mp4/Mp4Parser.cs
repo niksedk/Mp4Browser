@@ -198,7 +198,7 @@ namespace Mp4Browser.Mp4
                 {
                     var node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Movie" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Movie Box" + Environment.NewLine +
                               "Size: " + Size
                     };
                     treeView?.Nodes.Add(node);
@@ -208,7 +208,7 @@ namespace Mp4Browser.Mp4
                 {
                     var node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Media Data" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Media Data Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -225,7 +225,7 @@ namespace Mp4Browser.Mp4
                 {
                     var node = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Movie Fragment" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Movie Fragment Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
@@ -290,9 +290,10 @@ namespace Mp4Browser.Mp4
         {
             switch (name)
             {
-                case "ftyp": return "File Type";
-                case "styp": return "Segment Type";
-                case "sidx": return "Segment Index";
+                case "ftyp": return "File Type Box";
+                case "styp": return "Segment Type Box";
+                case "sidx": return "Segment Index Box";
+                case "free": return "Free Space Box";
                 default: return string.Empty;
             }
         }
