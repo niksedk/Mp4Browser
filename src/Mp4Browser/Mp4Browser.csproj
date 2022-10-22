@@ -73,6 +73,7 @@
     <Compile Include="Mp4\Boxes\Trak.cs" />
     <Compile Include="Mp4\Boxes\Trun.cs" />
     <Compile Include="Mp4\Boxes\Vttc.cs" />
+    <Compile Include="Mp4\ChunkText.cs" />
     <Compile Include="Mp4\Matrix.cs" />
     <Compile Include="Mp4\Mp4Parser.cs" />
     <Compile Include="Mp4\TimeSegment.cs" />

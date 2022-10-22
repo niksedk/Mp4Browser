@@ -31,6 +31,7 @@ namespace Mp4Browser
 
         private void OpenFile(string fileName)
         {
+            textBoxInfo.Text = string.Empty;
             textBoxFileName.Text = fileName;
             treeView1.Nodes.Clear();
             treeView1.BeginUpdate();
@@ -38,7 +39,7 @@ namespace Mp4Browser
             labelStatus.Text = $"Opening {_fileName}...";
             Refresh();
             Application.DoEvents();
-            var parser = new Mp4Parser(fileName, treeView1);
+            new Mp4Parser(fileName, treeView1);
             buttonSaveMDAT.Enabled = true;
             treeView1.EndUpdate();
             labelStatus.Text = string.Empty;
@@ -113,7 +114,7 @@ namespace Mp4Browser
 
                         var text = string.Empty;
                         if (stbl.Texts.Count > textIndex)
-                            text = stbl.Texts[textIndex];
+                            text = stbl.Texts[textIndex].Text;
                         sb.AppendLine(text);
 
                         sb.AppendLine();

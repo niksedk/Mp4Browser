@@ -22,7 +22,7 @@ namespace Mp4Browser.Mp4.Boxes
                     var stblNode = new TreeNode(Name);
                     Stbl = new Stbl(fs, Position, timeScale, handlerType, mdia, stblNode)
                     {
-                        Text = "Element: " + Name + " - Sample Table" + Environment.NewLine +
+                        Text = "Element: " + Name + " - Sample Table Box" + Environment.NewLine +
                                "Size: " + Size + Environment.NewLine +
                                "Position: " + StartPosition
                     };
@@ -34,7 +34,7 @@ namespace Mp4Browser.Mp4.Boxes
                 {
                     var stblNode = new TreeNode(Name)
                     {
-                        Tag = "Element: " + Name + " - Subtitle Media Header" + Environment.NewLine +
+                        Tag = "Element: " + Name + " - Subtitle Media Header Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition
                     };
