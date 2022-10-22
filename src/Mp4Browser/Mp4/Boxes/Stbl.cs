@@ -178,7 +178,7 @@ namespace Mp4Browser.Mp4.Boxes
                             var sampleCount = GetUInt(8 + i * 8);
                             var sampleDelta = GetUInt(12 + i * 8);
                             Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
-                            sbTimeToSample.AppendLine($" {i} - {sampleCount} - {sampleDelta}");
+                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount} - {sampleDelta}");
                             for (var j = 0; j < sampleCount; j++)
                             {
                                 totalTime += sampleDelta / (double)timeScale;
@@ -199,7 +199,7 @@ namespace Mp4Browser.Mp4.Boxes
                             var sampleCount = GetUInt(8 + i * 8);
                             var sampleDelta = GetUInt(12 + i * 8);
                             Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
-                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount,4} - {sampleDelta}");
+                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount} - {sampleDelta}");
                             totalTime += sampleDelta / (double)timeScale;
                             if (StartTimeCodes.Count <= EndTimeCodes.Count)
                             {
@@ -211,16 +211,36 @@ namespace Mp4Browser.Mp4.Boxes
                             }
                         }
                     }
+
+                    // expand time codes
+                    var idx = 0;
+                    var sbTimeToSampleExpanded = new StringBuilder();
+                    foreach (var timeInfo in Ssts)
+                    {
+                        for (var i = 0; i < timeInfo.SampleCount; i++)
+                        {
+                            sbTimeToSampleExpanded.AppendLine($" {idx,4} - {timeInfo.SampleDelta}");
+                            idx++;
+                        }
+                    }
+
                     root.Nodes.Add(new TreeNode(Name)
                     {
                         Tag = "Element: " + Name + " - Time to Sample Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
                               "Number of samples: " + numberOfSampleTimes + Environment.NewLine +
-                              "Number of samples unpacked: " + Ssts.Sum(p => p.SampleCount) + Environment.NewLine +
-                              "Samples: " + Environment.NewLine +
+                              "Number of samples expanded/unpacked: " + Ssts.Sum(p => p.SampleCount) + Environment.NewLine +
+                              "Samples (expanded/unpacked - find not expanded/unpacked further down): " + Environment.NewLine +
+                              "[   # - SampleDelta]" + Environment.NewLine +
+                              sbTimeToSampleExpanded + Environment.NewLine + Environment.NewLine + Environment.NewLine +
+                              "-------------------------------------------------------------------------" + Environment.NewLine +
+                              "-------------------------------------------------------------------------" + Environment.NewLine +
+                              "-------------------------------------------------------------------------" + Environment.NewLine +
+                              Environment.NewLine + Environment.NewLine +
+                              "Samples (NOT expanded/unpacked): " + Environment.NewLine +
                               "[   # - SampleCount - SampleDelta]" + Environment.NewLine +
-                                 sbTimeToSample
+                              sbTimeToSample
                     });
                 }
                 else if (Name == "stsc") // sample table sample to chunk map
