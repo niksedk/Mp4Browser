@@ -87,9 +87,8 @@ namespace Mp4Browser
                     var sb = new StringBuilder();
                     foreach (var timeInfo in stbl.Ssts)
                     {
-                        for (int i = 0; i < timeInfo.SampleCount; i++)
                         {
-                            totalTime += timeInfo.SampleDelta / (double)stbl.TimeScale;
+                            totalTime += timeInfo / (double)stbl.TimeScale;
                             allTimes.Add(totalTime);
                         }
                     }

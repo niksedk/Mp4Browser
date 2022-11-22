@@ -16,22 +16,16 @@ namespace Mp4Browser.Mp4.Boxes
             public uint SampleDescriptionIndex { get; set; }
         }
 
-        public class TimeInfo
-        {
-            public uint SampleCount { get; set; }
-            public uint SampleDelta { get; set; }
-        }
-
-        public List<double> StartTimeCodes = new List<double>();
-        public List<double> EndTimeCodes = new List<double>();
         public List<uint> SampleSizes = new List<uint>();
         public ulong StszSampleCount = 0;
-        private readonly Mdia _mdia;
         public ulong TimeScale { get; set; }
         public string HandlerType { get; set; }
-        public List<TimeInfo> Ssts { get; set; }
+        public List<uint> Ssts { get; set; }
         public List<SampleToChunkMap> Stsc { get; set; }
         public List<ChunkText> Texts { get; set; }
+        public string TextsName { get; set; }
+        public ulong TextsSize { get; set; }
+        public ulong TextsPosition { get; set; }
         public List<byte[]> TextBuffers { get; set; }
 
         public string Text { get; set; }
@@ -45,11 +39,10 @@ namespace Mp4Browser.Mp4.Boxes
         {
             TimeScale = timeScale;
             HandlerType = handlerType;
-            Ssts = new List<TimeInfo>();
+            Ssts = new List<uint>();
             Stsc = new List<SampleToChunkMap>();
             Texts = new List<ChunkText>();
             TextBuffers = new List<byte[]>();
-            _mdia = mdia;
             Position = (ulong)fs.Position;
             while (fs.Position < (long)maximumLength)
             {
@@ -58,78 +51,35 @@ namespace Mp4Browser.Mp4.Boxes
 
                 if (Name == "stco") // 32-bit - chunk offset
                 {
+                    TextsName = Name;
+                    TextsSize = Size;
+                    TextsPosition = Position;
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
                     var totalEntries = GetUInt(4);
-                    uint lastOffset = 0;
-                    var sbTexts = new StringBuilder();
+
                     for (var i = 0; i < totalEntries; i++)
                     {
                         var offset = GetUInt(8 + i * 4);
-                        if (lastOffset + 5 < offset)
-                        {
-                            var text = ReadText(fs, offset, handlerType, i);
-                            Texts.Add(text);
-                            sbTexts.AppendLine($" {i,4} - {text.Size,2} {offset,9} - {text.Text?.Replace(Environment.NewLine, "</br>")}");
-                        }
-                        else
-                        {
-                            Texts.Add(new ChunkText { Size = 2 });
-                            sbTexts.AppendLine($" {i,4} -  2 - {offset,9} - ?");
-                        }
-
-                        lastOffset = offset;
+                        Texts.Add(new ChunkText { Offset = offset });
                     }
-
-                    root.Nodes.Add(new TreeNode(Name)
-                    {
-                        Tag = "Element: " + Name + " - Chunk Offset" + Environment.NewLine +
-                              "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition + Environment.NewLine +
-                              "Total entries: " + totalEntries + Environment.NewLine +
-                              "Texts: " + Environment.NewLine +
-                              "[   # - Size - Offset - Text]" + Environment.NewLine +
-                              sbTexts
-                    });
                 }
                 else if (Name == "co64") // 64-bit
                 {
+                    TextsName = Name;
+                    TextsSize = Size;
+                    TextsPosition = Position;
                     Buffer = new byte[Size - 4];
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
                     var totalEntries = GetUInt(4);
-                    var sbTexts = new StringBuilder();
 
-                    ulong lastOffset = 0;
                     for (var i = 0; i < totalEntries; i++)
                     {
                         var offset = GetUInt64(8 + i * 8);
-                        if (lastOffset + 8 < offset)
-                        {
-                            var s = ReadText(fs, offset, handlerType, i);
-                            sbTexts.AppendLine($" {i,4} - {s.Size,2} - {offset,9} - {s.Text?.Replace(Environment.NewLine, "</br>")}");
-                            Texts.Add(new ChunkText { Size = s.Size, Text = s.Text });
-                        }
-                        else
-                        {
-                            sbTexts.AppendLine($" {i,4} -  2 - {offset,9} - ?");
-                            Texts.Add(new ChunkText { Size = 2 });
-                        }
-
-                        lastOffset = offset;
+                        Texts.Add(new ChunkText { Offset = offset });
                     }
-                    var co64Node = new TreeNode(Name)
-                    {
-                        Tag = "Element: " + Name + " - Chunk Offset Box " + Environment.NewLine +
-                              "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition + Environment.NewLine +
-                              "Total entries: " + totalEntries + Environment.NewLine +
-                              "Texts: " + Environment.NewLine +
-                              "[# - Size - Offset - Text]" + Environment.NewLine +
-                              sbTexts
-                    };
-                    root.Nodes.Add(co64Node);
                 }
                 else if (Name == "stsz") // sample sizes
                 {
@@ -140,15 +90,18 @@ namespace Mp4Browser.Mp4.Boxes
                     var uniformSizeOfEachSample = GetUInt(4);
                     var numberOfSampleSizes = GetUInt(8);
                     StszSampleCount = numberOfSampleSizes;
+                    int count = 1;
                     for (var i = 0; i < numberOfSampleSizes; i++)
                     {
                         if (12 + i * 4 + 4 < Buffer.Length)
                         {
                             var sampleSize = GetUInt(12 + i * 4);
                             SampleSizes.Add(sampleSize);
-                            sbSampleSizes.AppendLine($" {i,4} - {sampleSize,4}");
+                            sbSampleSizes.AppendLine($" {count,4} - {sampleSize,4}");
+                            count++;
                         }
                     }
+
                     root.Nodes.Add(new TreeNode(Name)
                     {
                         Tag = "Element: " + Name + " - Sample Size Box" + Environment.NewLine +
@@ -169,58 +122,19 @@ namespace Mp4Browser.Mp4.Boxes
                     fs.Read(Buffer, 0, Buffer.Length);
                     int version = Buffer[0];
                     var numberOfSampleTimes = GetUInt(4);
-                    double totalTime = 0;
+
                     var sbTimeToSample = new StringBuilder();
-                    if (_mdia.IsClosedCaption)
-                    {
-                        for (var i = 0; i < numberOfSampleTimes; i++)
-                        {
-                            var sampleCount = GetUInt(8 + i * 8);
-                            var sampleDelta = GetUInt(12 + i * 8);
-                            Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
-                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount} - {sampleDelta}");
-                            for (var j = 0; j < sampleCount; j++)
-                            {
-                                totalTime += sampleDelta / (double)timeScale;
-                                if (StartTimeCodes.Count > 0)
-                                {
-                                    EndTimeCodes[EndTimeCodes.Count - 1] = totalTime - 0.001;
-                                }
 
-                                StartTimeCodes.Add(totalTime);
-                                EndTimeCodes.Add(totalTime + 2.5);
-                            }
-                        }
-                    }
-                    else
+                    int count = 1;
+                    for (var i = 0; i < numberOfSampleTimes; i++)
                     {
-                        for (var i = 0; i < numberOfSampleTimes; i++)
+                        var sampleCount = GetUInt(8 + i * 8);
+                        var sampleDelta = GetUInt(12 + i * 8);
+                        for (var j = 0; j < sampleCount; j++)
                         {
-                            var sampleCount = GetUInt(8 + i * 8);
-                            var sampleDelta = GetUInt(12 + i * 8);
-                            Ssts.Add(new TimeInfo { SampleCount = sampleCount, SampleDelta = sampleDelta });
-                            sbTimeToSample.AppendLine($" {i,4} - {sampleCount} - {sampleDelta}");
-                            totalTime += sampleDelta / (double)timeScale;
-                            if (StartTimeCodes.Count <= EndTimeCodes.Count)
-                            {
-                                StartTimeCodes.Add(totalTime);
-                            }
-                            else
-                            {
-                                EndTimeCodes.Add(totalTime);
-                            }
-                        }
-                    }
-
-                    // expand time codes
-                    var idx = 0;
-                    var sbTimeToSampleExpanded = new StringBuilder();
-                    foreach (var timeInfo in Ssts)
-                    {
-                        for (var i = 0; i < timeInfo.SampleCount; i++)
-                        {
-                            sbTimeToSampleExpanded.AppendLine($" {idx,4} - {timeInfo.SampleDelta}");
-                            idx++;
+                            Ssts.Add(sampleDelta);
+                            sbTimeToSample.AppendLine($" {count,4} - {sampleDelta}");
+                            count++;
                         }
                     }
 
@@ -229,18 +143,10 @@ namespace Mp4Browser.Mp4.Boxes
                         Tag = "Element: " + Name + " - Time to Sample Box" + Environment.NewLine +
                               "Size: " + Size + Environment.NewLine +
                               "Position: " + StartPosition + Environment.NewLine +
-                              "Number of samples: " + numberOfSampleTimes + Environment.NewLine +
-                              "Number of samples expanded/unpacked: " + Ssts.Sum(p => p.SampleCount) + Environment.NewLine +
-                              "Samples (expanded/unpacked - find not expanded/unpacked further down): " + Environment.NewLine +
+                              "Number of samples (expanded): " + Ssts.Count + Environment.NewLine +
+                              "Samples: " + Environment.NewLine +
                               "[   # - SampleDelta]" + Environment.NewLine +
-                              sbTimeToSampleExpanded + Environment.NewLine + Environment.NewLine + Environment.NewLine +
-                              "-------------------------------------------------------------------------" + Environment.NewLine +
-                              "-------------------------------------------------------------------------" + Environment.NewLine +
-                              "-------------------------------------------------------------------------" + Environment.NewLine +
-                              Environment.NewLine + Environment.NewLine +
-                              "Samples (NOT expanded/unpacked): " + Environment.NewLine +
-                              "[   # - SampleCount - SampleDelta]" + Environment.NewLine +
-                              sbTimeToSample
+                              sbTimeToSample + Environment.NewLine + Environment.NewLine + Environment.NewLine
                     });
                 }
                 else if (Name == "stsc") // sample table sample to chunk map
@@ -254,17 +160,13 @@ namespace Mp4Browser.Mp4.Boxes
                     {
                         if (16 + i * 12 + 4 < Buffer.Length)
                         {
-                            var map = new SampleToChunkMap
-                            {
-                                FirstChunk = GetUInt(8 + i * 12),
-                                SamplesPerChunk = GetUInt(12 + i * 12),
-                                SampleDescriptionIndex = GetUInt(16 + i * 12),
-                            };
-                            Stsc.Add(map);
-                            stscSb.AppendLine($"{map.FirstChunk,4} - {map.SamplesPerChunk,4} - {map.SampleDescriptionIndex,4}");
+                            var firstChunk = GetUInt(8 + i * 12);
+                            var samplesPerChunk = GetUInt(12 + i * 12);
+                            var sampleDescriptionIndex = GetUInt(16 + i * 12);
+                            Stsc.Add(new SampleToChunkMap { FirstChunk = firstChunk, SamplesPerChunk = samplesPerChunk, SampleDescriptionIndex = sampleDescriptionIndex });
+                            stscSb.AppendLine($"{firstChunk,4} - {samplesPerChunk,4} - {sampleDescriptionIndex,4}");
                         }
                     }
-
                     root.Nodes.Add(new TreeNode(Name)
                     {
                         Tag = "Element: " + Name + " - Sample‐to‐Chunk Box" + Environment.NewLine +
@@ -300,98 +202,92 @@ namespace Mp4Browser.Mp4.Boxes
 
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
+
+            var isSubtitle = false;
+            if (handlerType != "vide" && handlerType != "soun")
+            {
+                GetParagraphs(fs, handlerType == "subp");
+                isSubtitle = true;
+            }
+
+            if (Texts.Count > 0)
+            {
+                var sbTexts = new StringBuilder();
+                for (var index = 0; index < Texts.Count; index++)
+                {
+                    var chunkText = Texts[index];
+                    if (isSubtitle)
+                    {
+                        sbTexts.AppendLine($"{index + 1:###} - {chunkText.Offset:#######} - {chunkText.Text?.Replace(Environment.NewLine, "|")}");
+                    }
+                    else
+                    {
+                        sbTexts.AppendLine($"{index + 1:###} - {chunkText.Offset:#######}");
+                    }
+                }
+
+                root.Nodes.Add(new TreeNode(Name)
+                {
+                    Tag = "Element: " + TextsName + " - Chunk Offset" + Environment.NewLine +
+                          "Size: " + TextsSize + Environment.NewLine +
+                          "Position: " + TextsPosition + Environment.NewLine +
+                          "Number of chunks: " + Texts.Count + Environment.NewLine +
+                          "Texts: " + Environment.NewLine +
+                          "[   # - Offset " + (isSubtitle ? "- Text]" : string.Empty) + Environment.NewLine +
+                          sbTexts
+                });
+            }
         }
 
-        private ChunkText ReadText(Stream fs, ulong offset, string handlerType, int index)
+        private void GetParagraphs(Stream fs, bool subtitlePicture)
         {
-            if (handlerType == "vide" || handlerType == "soun")
+            uint samplesPerChunk = 1;
+            var max = Texts.Count;
+            var index = 0;
+            for (var chunkIndex = 0; chunkIndex < max; chunkIndex++)
             {
-                return new ChunkText { Size = 2 };
-            }
-
-            fs.Seek((long)offset, SeekOrigin.Begin);
-            var data = new byte[4];
-            fs.Read(data, 0, 2);
-            var textSize = (uint)GetWord(data, 0);
-
-            if (handlerType == "subp") // VobSub created with Mp4Box
-            {
-                if (textSize > 100)
+                var newSamplesPerChunk = Stsc.FirstOrDefault(item => item.FirstChunk == chunkIndex + 1);
+                if (newSamplesPerChunk != null)
                 {
-                    fs.Seek((long)offset, SeekOrigin.Begin);
-                    data = new byte[textSize + 2];
-                    fs.Read(data, 0, data.Length);
-                    //SubPictures.Add(new SubPicture(data)); // TODO: Where is palette?
-                    return new ChunkText { Size = 2 };
-                }
-            }
-            else
-            {
-                if (handlerType == "text" && index + 1 < SampleSizes.Count && SampleSizes[index + 1] <= 2)
-                {
-                    return new ChunkText { Size = 2 };
+                    samplesPerChunk = newSamplesPerChunk.SamplesPerChunk;
                 }
 
-                if (textSize == 0)
+                var chunk = Texts[chunkIndex];
+                for (var i = 0; i < samplesPerChunk; i++)
                 {
-                    fs.Read(data, 2, 2);
-                    textSize = GetUInt(data, 0); // don't get it exactly - seems like mp4box sometimes uses 2 bytes length field (first text record only)... handbrake uses 4 bytes
-                }
-
-                if (textSize > 0 && textSize < 500)
-                {
-                    data = new byte[textSize];
-                    fs.Read(data, 0, data.Length);
-                    var text = GetString(data, 0, (int)textSize).TrimEnd();
-
-                    if (_mdia.IsClosedCaption)
+                    if (index >= SampleSizes.Count || index >= Ssts.Count)
                     {
-                        var sb = new StringBuilder();
-                        for (int j = 8; j < data.Length - 3; j++)
+                        return;
+                    }
+
+                    var sampleSize = SampleSizes[index];
+
+                    if (sampleSize > 2)
+                    {
+                        fs.Seek((long)chunk.Offset, SeekOrigin.Begin);
+                        var buffer = new byte[2];
+                        fs.Read(buffer, 0, buffer.Length);
+                        var textSize = (uint)GetWord(buffer, 0);
+                        if (textSize == 0 && samplesPerChunk > 1)
                         {
-                            string h = data[j].ToString("X2").ToLowerInvariant();
-                            if (h.Length < 2)
+                            fs.Read(buffer, 0, buffer.Length);
+                            textSize = (uint)GetWord(buffer, 0);
+                        }
+
+                        if (textSize > 0)
+                        {
+                            if (!subtitlePicture)
                             {
-                                h = "0" + h;
+                                buffer = new byte[textSize];
+                                fs.Read(buffer, 0, buffer.Length);
+                                chunk.Text = GetString(buffer, 0, (int)textSize).TrimEnd();
                             }
-
-                            sb.Append(h);
-                            if (j % 2 == 1)
-                            {
-                                sb.Append(' ');
-                            }
-                        }
-
-                        var hex = sb.ToString();
-                        var errorCount = 0;
-                        text = string.Empty; //  ScenaristClosedCaptions.GetSccText(hex, ref errorCount);
-                        if (text.StartsWith("n") && text.Length > 1)
-                        {
-                            text = "<i>" + text.Substring(1) + "</i>";
-                        }
-
-                        if (text.StartsWith("-n", StringComparison.Ordinal))
-                        {
-                            text = text.Remove(0, 2);
-                        }
-
-                        if (text.StartsWith("-N", StringComparison.Ordinal))
-                        {
-                            text = text.Remove(0, 2);
-                        }
-
-                        if (text.StartsWith("-") && !text.Contains(Environment.NewLine + "-"))
-                        {
-                            text = text.Remove(0, 1);
                         }
                     }
 
-                    text = text.Replace(Environment.NewLine, "\n").Replace("\n", Environment.NewLine);
-                    return new ChunkText { Size = textSize, Text = text };
+                    index++;
                 }
             }
-
-            return new ChunkText { Size = 2 };
         }
     }
 }
