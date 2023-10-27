@@ -31,15 +31,15 @@ namespace Mp4Browser.Mp4.Boxes
 
                 if (Name == "trun")
                 {
-                    var trunNode = new TreeNode(Name)
-                    {
-                        Tag = "Element: " + Name + " - Track Fragment Run" + Environment.NewLine +
-                              "Size: " + Size + Environment.NewLine +
-                              "Position: " + StartPosition
-                              + data
-                    };
+                    var trunNode = new TreeNode(Name);
                     root.Nodes.Add(trunNode);
                     Trun = new Trun(fs, Position, trunNode);
+                    trunNode.Tag = "Element: " + Name + " - Track Fragment Run" + Environment.NewLine +
+                                   "Size: " + Size + Environment.NewLine +
+                                   "DataOffset: " + Trun.DataOffset + Environment.NewLine +
+                                   "Position: " + StartPosition
+                                   + data;
+
                 }
                 else if (Name == "tfdt")
                 {

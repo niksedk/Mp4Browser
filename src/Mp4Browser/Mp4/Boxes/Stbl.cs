@@ -90,14 +90,27 @@ namespace Mp4Browser.Mp4.Boxes
                     var uniformSizeOfEachSample = GetUInt(4);
                     var numberOfSampleSizes = GetUInt(8);
                     StszSampleCount = numberOfSampleSizes;
-                    int count = 1;
+                    var count = 1;
                     for (var i = 0; i < numberOfSampleSizes; i++)
                     {
                         if (12 + i * 4 + 4 < Buffer.Length)
                         {
                             var sampleSize = GetUInt(12 + i * 4);
+
+                            var subsamplePriority = Buffer[16 + i * 4];
+                            var discardable = Buffer[17 + i * 4];
+
                             SampleSizes.Add(sampleSize);
-                            sbSampleSizes.AppendLine($" {count,4} - {sampleSize,4}");
+
+                            if (discardable > 0)
+                            {
+                                sbSampleSizes.AppendLine($" {count,4} - {sampleSize,4} - discardable={discardable}");
+                            }
+                            else
+                            {
+                                sbSampleSizes.AppendLine($" {count,4} - {sampleSize,4}");
+                            }
+
                             count++;
                         }
                     }

@@ -10,12 +10,15 @@ namespace Mp4Browser.Mp4.Boxes
     public class Trun : Box
     {
         public List<TimeSegment> Samples { get; set; }
+        public uint? DataOffset { get; set; }
 
         public Trun(Stream fs, ulong maximumLength, TreeNode rootNode)
         {
             Samples = new List<TimeSegment>();
             if (maximumLength <= 4)
+            {
                 return;
+            }
 
             Buffer = new byte[maximumLength - 4];
             var readCount = fs.Read(Buffer, 0, Buffer.Length);
@@ -32,6 +35,7 @@ namespace Mp4Browser.Mp4.Boxes
             if ((flags & 0x000001) > 0)
             {
                 pos += 4;
+                DataOffset = GetUInt(8);
             }
 
             // skip "first_sample_flags" if present
@@ -90,7 +94,7 @@ namespace Mp4Browser.Mp4.Boxes
             };
             rootNode.Nodes.Add(sampleNodes);
 
-            for (int i=0; i<Samples.Count; i++)
+            for (var i = 0; i < Samples.Count; i++)
             {
                 var sample = Samples[i];
                 sampleNodes.Nodes.Add("Time: " + sample.TimeOffset + ", size: " + sample.Size + ", dur: " + sample.Duration);
