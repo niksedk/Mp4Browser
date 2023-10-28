@@ -82,7 +82,7 @@ namespace Mp4Browser.Mp4.Boxes
                 // read "sample_time_offset" if present
                 if ((flags & 0x000800) > 0)
                 {
-                    sample.TimeOffset = version == 0 ? GetUInt(pos) : (uint)GetUInt(pos);
+                    sample.TimeOffset = version == 0 ? (long)GetUInt(pos) : GetInt(pos); // version==1 equals signed
                     pos += 4;
                 }
                 Samples.Add(sample);

@@ -27,11 +27,11 @@ namespace Mp4Browser.Mp4.Boxes
 
             if (version == 1)
             {
-                BaseMediaDecodeTime = GetUInt(4);
+                BaseMediaDecodeTime = GetUInt64(4);
             }
             else
             {
-                BaseMediaDecodeTime = GetUInt64(4);
+                BaseMediaDecodeTime = GetUInt(4);
             }
 
             if (BaseMediaDecodeTime > 0)

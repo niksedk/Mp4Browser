@@ -21,6 +21,11 @@ namespace Mp4Browser.Mp4.Boxes
             return (uint)((Buffer[index] << 24) + (Buffer[index + 1] << 16) + (Buffer[index + 2] << 8) + Buffer[index + 3]);
         }
 
+        public int GetInt(int index)
+        {
+            return (int)((Buffer[index] << 24) + (Buffer[index + 1] << 16) + (Buffer[index + 2] << 8) + Buffer[index + 3]);
+        }
+
         public ulong GetUInt64(int index)
         {
             try

@@ -8,7 +8,7 @@ namespace Mp4Browser.Mp4.Boxes
     {
         public Traf Traf { get; set; }
 
-        public Moof(Stream fs, ulong maximumLength, TreeNode root)
+        public Moof(Stream fs, ulong maximumLength, TreeNode root, ulong startPosition)
         {
             Position = (ulong)fs.Position;
             while (fs.Position < (long)maximumLength)
@@ -51,6 +51,8 @@ namespace Mp4Browser.Mp4.Boxes
 
                 fs.Seek((long)Position, SeekOrigin.Begin);
             }
+
+            StartPosition = startPosition;
         }
     }
 }

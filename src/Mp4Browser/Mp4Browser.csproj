@@ -73,6 +73,19 @@
     <Compile Include="Mp4\Boxes\Trak.cs" />
     <Compile Include="Mp4\Boxes\Trun.cs" />
     <Compile Include="Mp4\Boxes\Vttc.cs" />
+    <Compile Include="Mp4\Cea608\CaptionScreen.cs" />
+    <Compile Include="Mp4\Cea608\CcDataC608Parser.cs" />
+    <Compile Include="Mp4\Cea608\Cea608Channel.cs" />
+    <Compile Include="Mp4\Cea608\Constants.cs" />
+    <Compile Include="Mp4\Cea608\CcStyle.cs" />
+    <Compile Include="Mp4\Cea608\DataOutput.cs" />
+    <Compile Include="Mp4\Cea608\PacData.cs" />
+    <Compile Include="Mp4\Cea608\SerializedPenState.cs" />
+    <Compile Include="Mp4\Cea608\SerializedRow.cs" />
+    <Compile Include="Mp4\Cea608\SerializedStyledUnicodeChar.cs" />
+    <Compile Include="Mp4\Cea608\PenState.cs" />
+    <Compile Include="Mp4\Cea608\Row.cs" />
+    <Compile Include="Mp4\Cea608\StyledUnicodeChar.cs" />
     <Compile Include="Mp4\ChunkText.cs" />
     <Compile Include="Mp4\Matrix.cs" />
     <Compile Include="Mp4\Mp4Parser.cs" />
@@ -108,5 +121,6 @@
   <ItemGroup>
     <Content Include="Mp4Browser.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
