@@ -31,7 +31,7 @@ namespace Mp4Browser.Mp4.Cea608
             NonDisplayedMemory = new CaptionScreen();
             LastOutputScreen = new CaptionScreen();
 
-            CurrentRollUpRow = DisplayedMemory.Rows[Constants.SCREEN_ROW_COUNT - 1];
+            CurrentRollUpRow = DisplayedMemory.Rows[Constants.ScreenRowCount - 1];
             WriteScreen = DisplayedMemory;
             CueStartTime = null;
         }
@@ -100,7 +100,7 @@ namespace Mp4Browser.Mp4.Cea608
             DisplayedMemory.Reset();
             NonDisplayedMemory.Reset();
             LastOutputScreen.Reset();
-            CurrentRollUpRow = DisplayedMemory.Rows[Constants.SCREEN_ROW_COUNT - 1];
+            CurrentRollUpRow = DisplayedMemory.Rows[Constants.ScreenRowCount - 1];
             WriteScreen = DisplayedMemory;
             CueStartTime = null;
         }
@@ -148,8 +148,8 @@ namespace Mp4Browser.Mp4.Cea608
 
             if (Mode != "MODE_ROLL-UP")
             {
-                DisplayedMemory.nrRollUpRows = null;
-                NonDisplayedMemory.nrRollUpRows = null;
+                DisplayedMemory.NumberOfRollUpRows = null;
+                NonDisplayedMemory.NumberOfRollUpRows = null;
             }
 
             Mode = newMode;
@@ -318,11 +318,11 @@ namespace Mp4Browser.Mp4.Cea608
             if (!styles.Italics.Value)
             {
                 var colorIndex = (int)Math.Floor(secondByte / 2.0) - 0x10;
-                styles.Foreground = Constants.PAC_DATA_COLORS[colorIndex];
+                styles.Foreground = Constants.PacDataColors[colorIndex];
             }
             else
             {
-                styles.Foreground = Constants.COLOR_WHITE;
+                styles.Foreground = Constants.ColorWhite;
             }
 
             WriteScreen.SetPen(styles);
@@ -330,7 +330,7 @@ namespace Mp4Browser.Mp4.Cea608
 
         public void OutputDataUpdate(bool rolling = false)
         {
-            var t = Parser.lastTime;
+            var t = Parser.LastTime;
             if (t == null)
             {
                 return;

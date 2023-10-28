@@ -3,7 +3,12 @@
     public class SerializedRow
     {
         public int Row { get; set; }
-        public int Position { get; set; } // col indent
+
+        /// <summary>
+        /// Column indentation.
+        /// </summary>
+        public int Position { get; set; } 
+
         public CcStyle Style { get; set; }
         public SerializedStyledUnicodeChar[] Columns { get; set; }
     }

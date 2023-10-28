@@ -4,36 +4,36 @@ namespace Mp4Browser.Mp4.Cea608
 {
     public static class Constants
     {
-        public const string COLOR_WHITE = "white";
-        public const string COLOR_GREEN = "green";
-        public const string COLOR_BLUE = "blue";
-        public const string COLOR_CYAN = "cyan";
-        public const string COLOR_RED = "red";
-        public const string COLOR_YELLOW = "yellow";
-        public const string COLOR_MAGENTA = "magenta";
-        public const string COLOR_BLACK = "black";
-        public const string COLOR_TRANSPARENT = "transparent";
+        public const string ColorWhite = "white";
+        public const string ColorGreen = "green";
+        public const string ColorBlue = "blue";
+        public const string ColorCyan = "cyan";
+        public const string ColorRed = "red";
+        public const string ColorYellow = "yellow";
+        public const string ColorMagenta = "magenta";
+        public const string ColorBlack = "black";
+        public const string ColorTransparent = "transparent";
 
-        public const string EMPTY_CHAR = " ";
+        public const string EmptyChar = " ";
 
-        public static string[] PAC_DATA_COLORS = new string[]
+        public static string[] PacDataColors = new string[]
         {
-            COLOR_WHITE,
-            COLOR_GREEN,
-            COLOR_BLUE,
-            COLOR_CYAN,
-            COLOR_RED,
-            COLOR_YELLOW,
-            COLOR_MAGENTA,
-            COLOR_BLACK,
-            COLOR_TRANSPARENT
+            ColorWhite,
+            ColorGreen,
+            ColorBlue,
+            ColorCyan,
+            ColorRed,
+            ColorYellow,
+            ColorMagenta,
+            ColorBlack,
+            ColorTransparent
         };
 
-        public const int SCREEN_ROW_COUNT = 15;
-        public const int SCREEN_COL_COUNT = 32;
+        public const int ScreenRowCount = 15;
+        public const int ScreenColCount = 32;
 
 
-        public static Dictionary<int, int> EXTENDED_CHAR_CODES = new Dictionary<int, int>
+        public static Dictionary<int, int> ExtendedCharCodes = new Dictionary<int, int>
         {
             { 0x2a, 0xe1 },  // lowercase a, acute accent
             { 0x5c, 0xe9 },  // lowercase e, acute accent
@@ -134,7 +134,7 @@ namespace Mp4Browser.Mp4.Cea608
             { 0xcf, 0x251b }  // Box drawings heavy up and left
         };
 
-        public static Dictionary<int, int> CHANNEL_1_ROWS_MAP = new Dictionary<int, int>
+        public static Dictionary<int, int> Channel1RowsMap = new Dictionary<int, int>
         {
             { 0x11, 1 },
             { 0x12, 3 },
@@ -146,7 +146,7 @@ namespace Mp4Browser.Mp4.Cea608
             { 0x14, 14 }
         };
 
-        public static Dictionary<int, int> CHANNEL_2_ROWS_MAP = new Dictionary<int, int>
+        public static Dictionary<int, int> Channel2RowsMap = new Dictionary<int, int>
         {
             { 0x19, 1 },
             { 0x1A, 3 },

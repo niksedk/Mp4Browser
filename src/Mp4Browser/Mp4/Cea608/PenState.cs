@@ -2,10 +2,10 @@
 {
     public class PenState
     {
-        public string Foreground { get; set; } = Constants.COLOR_WHITE;
+        public string Foreground { get; set; } = Constants.ColorWhite;
         public bool Underline;
         public bool Italics { get; set; }
-        public string Background { get; set; } = Constants.COLOR_BLACK;
+        public string Background { get; set; } = Constants.ColorBlack;
         public bool Flash { get; set; }
 
         public PenState()
@@ -23,10 +23,10 @@
 
         public void Reset()
         {
-            Foreground = Constants.COLOR_WHITE;
+            Foreground = Constants.ColorWhite;
             Underline = false;
             Italics = false;
-            Background = Constants.COLOR_BLACK;
+            Background = Constants.ColorBlack;
             Flash = false;
         }
 
@@ -63,7 +63,7 @@
 
         public bool IsDefault()
         {
-            return Foreground == Constants.COLOR_WHITE && !Underline && !Italics && Background == Constants.COLOR_BLACK && !Flash;
+            return Foreground == Constants.ColorWhite && !Underline && !Italics && Background == Constants.ColorBlack && !Flash;
         }
 
         public void SetStyles(SerializedPenState styles)

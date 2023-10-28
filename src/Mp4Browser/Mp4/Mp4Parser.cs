@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using Mp4Browser.Mp4.Boxes;
 using System.Text;
 using Mp4Browser.Mp4.Cea608;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace Mp4Browser.Mp4
 {
@@ -327,7 +326,7 @@ namespace Mp4Browser.Mp4
 
             var sortedData = TrunAllCcData.OrderBy(p => p.Time).ToList();
             var parser = new CcDataC608Parser();
-            parser.DisplayScreen += DisplayScreen; 
+            parser.DisplayScreen += DisplayScreen;
             foreach (var cc in sortedData)
             {
                 parser.AddData((int)cc.Time, new[] { cc.Data1, cc.Data2 });

@@ -4,7 +4,7 @@
     {
         public PenState PenState { get; set; }
 
-        public string Uchar { get; set; } = Constants.EMPTY_CHAR;
+        public string Uchar { get; set; } = Constants.EmptyChar;
         public string Foreground { get; set; }
         public bool? Underline { get; set; }
         public bool? Italics { get; set; }
@@ -18,7 +18,7 @@
 
         public void Reset()
         {
-            Uchar = Constants.EMPTY_CHAR;
+            Uchar = Constants.EmptyChar;
             PenState.Reset();
         }
 
@@ -46,7 +46,7 @@
 
         public bool IsEmpty()
         {
-            return Uchar == Constants.EMPTY_CHAR && PenState.IsDefault();
+            return Uchar == Constants.EmptyChar && PenState.IsDefault();
         }
     }
 }

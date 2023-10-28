@@ -8,27 +8,28 @@ namespace Mp4Browser.Mp4.Cea608
         public delegate void DisplayScreenDelegate(DataOutput data);
 
         public Cea608Channel[] Channels { get; set; }
-        public int? currChNr = -1;
-        public int? lastTime;
-        private int? lastCmdA;
-        private int? lastCmdB;
-        private int dataField;
+        public int? CurrentChannelNumber { get; set; }
+        public int? LastTime { get; set; }
+
+        private int? _lastCmdA;
+        private int? _lastCmdB;
+
         public DisplayScreenDelegate DisplayScreen { get; set; }
 
         public CcDataC608Parser()
         {
-            Channels = new Cea608Channel[]
+            Channels = new[]
             {
                 new Cea608Channel(1, this),
                 new Cea608Channel(2, this),
             };
 
-            currChNr = -1;
+            CurrentChannelNumber = -1;
         }
 
         public void AddData(int t, int[] byteList)
         {
-            lastTime = t;
+            LastTime = t;
 
             for (var i = 0; i < byteList.Length; i += 2)
             {
@@ -55,9 +56,9 @@ namespace Mp4Browser.Mp4.Cea608
             var charsFound = ParseChars(ccData1, ccData2);
             if (charsFound.Length > 0)
             {
-                if (currChNr != null && currChNr >= 0)
+                if (CurrentChannelNumber != null && CurrentChannelNumber >= 0)
                 {
-                    var channel = Channels[currChNr.Value - 1];
+                    var channel = Channels[CurrentChannelNumber.Value - 1];
                     channel.InsertChars(charsFound);
                 }
                 else
@@ -84,7 +85,7 @@ namespace Mp4Browser.Mp4.Cea608
             if (0x11 <= charCode1 && charCode1 <= 0x13)
             {
                 // Special character
-                var oneCode = b;
+                int oneCode;
                 if (charCode1 == 0x11)
                 {
                     oneCode = b + 0x50;
@@ -113,7 +114,7 @@ namespace Mp4Browser.Mp4.Cea608
             return charCodes.ToArray();
         }
 
-        private bool HasCmd(int ccData1, int ccData2)
+        private static bool HasCmd(int ccData1, int ccData2)
         {
             return ((ccData1 == 0x14 || ccData1 == 0x1C) && (0x20 <= ccData2 && ccData2 <= 0x2F)) ||
                 ((ccData1 == 0x17 || ccData1 == 0x1F) && (0x21 <= ccData2 && ccData2 <= 0x23));
@@ -121,18 +122,17 @@ namespace Mp4Browser.Mp4.Cea608
 
         public bool ParseCmd(int a, int b)
         {
-            int chNr;
-
             if (HasCmd(a, b))
             {
                 // Duplicate CMD commands get skipped once
-                if (lastCmdA == a && lastCmdB == b)
+                if (_lastCmdA == a && _lastCmdB == b)
                 {
-                    lastCmdA = null;
-                    lastCmdB = null;
+                    _lastCmdA = null;
+                    _lastCmdB = null;
                     return true;
                 }
 
+                int chNr;
                 if (a == 0x14 || a == 0x17)
                 {
                     chNr = 1;
@@ -143,9 +143,9 @@ namespace Mp4Browser.Mp4.Cea608
                 }
 
                 Channels[chNr - 1].RunCmd(a, b);
-                currChNr = chNr;
-                lastCmdA = a;
-                lastCmdB = b;
+                CurrentChannelNumber = chNr;
+                _lastCmdA = a;
+                _lastCmdB = b;
                 return true;
             }
 
@@ -154,10 +154,9 @@ namespace Mp4Browser.Mp4.Cea608
 
         public bool ParseMidRow(int a, int b)
         {
-            int chNr;
-
             if (((a == 0x11) || (a == 0x19)) && 0x20 <= b && b <= 0x2f)
             {
+                int chNr;
                 if (a == 0x11)
                 {
                     chNr = 1;
@@ -174,7 +173,7 @@ namespace Mp4Browser.Mp4.Cea608
             return false;
         }
 
-        private bool HasPAC(int ccData1, int ccData2)
+        private static bool HasPac(int ccData1, int ccData2)
         {
             return (((0x11 <= ccData1 && ccData1 <= 0x17) || (0x19 <= ccData1 && ccData1 <= 0x1F)) && (0x40 <= ccData2 && ccData2 <= 0x7F)) ||
                    ((ccData1 == 0x10 || ccData1 == 0x18) && (0x40 <= ccData2 && ccData2 <= 0x5F));
@@ -182,26 +181,24 @@ namespace Mp4Browser.Mp4.Cea608
 
         public bool ParsePac(int a, int b)
         {
-            int chNr;
-            int row;
-
-            if (HasPAC(a, b))
+            if (HasPac(a, b))
             {
-                chNr = (a <= 0x17) ? 1 : 2;
+                var chNr = (a <= 0x17) ? 1 : 2;
 
+                int row;
                 if (0x40 <= b && b <= 0x5F)
                 {
-                    row = (chNr == 1) ? Constants.CHANNEL_1_ROWS_MAP[a] : Constants.CHANNEL_2_ROWS_MAP[a];
+                    row = (chNr == 1) ? Constants.Channel1RowsMap[a] : Constants.Channel2RowsMap[a];
                 }
                 else
                 { // 0x60 <= b <= 0x7F
-                    row = (chNr == 1) ? (Constants.CHANNEL_1_ROWS_MAP[a] + 1) : (Constants.CHANNEL_2_ROWS_MAP[a] + 1);
+                    row = (chNr == 1) ? (Constants.Channel1RowsMap[a] + 1) : (Constants.Channel2RowsMap[a] + 1);
                 }
 
                 var pacData = InterpretPac(row, b);
                 var channel = Channels[chNr - 1];
                 channel.SetPac(pacData);
-                currChNr = chNr;
+                CurrentChannelNumber = chNr;
                 return true;
             }
             return false;
@@ -231,12 +228,12 @@ namespace Mp4Browser.Mp4.Cea608
             pacData.Underline = (pacIndex & 1) == 1;
             if (pacIndex <= 0xd)
             {
-                pacData.Color = Constants.PAC_DATA_COLORS[(int)Math.Floor(pacIndex / 2.0)];
+                pacData.Color = Constants.PacDataColors[(int)Math.Floor(pacIndex / 2.0)];
             }
             else if (pacIndex <= 0xf)
             {
                 pacData.Italics = true;
-                pacData.Color = Constants.COLOR_WHITE;
+                pacData.Color = Constants.ColorWhite;
             }
             else
             {
@@ -257,7 +254,7 @@ namespace Mp4Browser.Mp4.Cea608
             if (a == 0x10 || a == 0x18)
             {
                 var index = (int)Math.Round(Math.Floor((b - 0x20) / 2.0));
-                bkgData.Background = Constants.PAC_DATA_COLORS[index];
+                bkgData.Background = Constants.PacDataColors[index];
                 if (b % 2 == 1)
                 {
                     bkgData.Background += "_semi";
@@ -265,11 +262,11 @@ namespace Mp4Browser.Mp4.Cea608
             }
             else if (b == 0x2d)
             {
-                bkgData.Background = Constants.COLOR_TRANSPARENT;
+                bkgData.Background = Constants.ColorTransparent;
             }
             else
             {
-                bkgData.Foreground = Constants.COLOR_BLACK;
+                bkgData.Foreground = Constants.ColorBlack;
                 if (b == 0x2f)
                 {
                     bkgData.Underline = true;

@@ -6,7 +6,7 @@
 
         public PenState CurrentPenState = new PenState();
 
-        public StyledUnicodeChar[] chars = new[]
+        public StyledUnicodeChar[] Chars { get; } = 
         {
             new StyledUnicodeChar(),
             new StyledUnicodeChar(),
@@ -44,11 +44,11 @@
 
         public bool Equals(Row other)
         {
-            for (var i = 0; i < Constants.SCREEN_COL_COUNT; i++)
+            for (var i = 0; i < Constants.ScreenColCount; i++)
             {
-                if (!chars[i].Equals(other.chars[i]))
+                if (!Chars[i].Equals(other.Chars[i]))
                 {
-                    if (!chars[i].Equals(other.chars[i]))
+                    if (!Chars[i].Equals(other.Chars[i]))
                     {
                         return false;
                     }
@@ -60,17 +60,17 @@
 
         public void Copy(Row other)
         {
-            for (var i = 0; i < Constants.SCREEN_COL_COUNT; i++)
+            for (var i = 0; i < Constants.ScreenColCount; i++)
             {
-                chars[i].Copy(other.chars[i]);
+                Chars[i].Copy(other.Chars[i]);
             }
         }
 
         public int FirstNonEmpty()
         {
-            for (var i = 0; i < Constants.SCREEN_COL_COUNT; i++)
+            for (var i = 0; i < Constants.ScreenColCount; i++)
             {
-                if (!chars[i].IsEmpty())
+                if (!Chars[i].IsEmpty())
                 {
                     return i;
                 }
@@ -81,9 +81,9 @@
 
         public bool IsEmpty()
         {
-            for (var i = 0; i < Constants.SCREEN_COL_COUNT; i++)
+            for (var i = 0; i < Constants.ScreenColCount; i++)
             {
-                if (!chars[i].IsEmpty())
+                if (!Chars[i].IsEmpty())
                 {
                     return false;
                 }
@@ -99,7 +99,7 @@
             {
                 for (var i = Position + 1; i < newPos + 1; i++)
                 {
-                    chars[i].SetPenState(CurrentPenState);
+                    Chars[i].SetPenState(CurrentPenState);
                 }
             }
 
@@ -109,7 +109,7 @@
         public void BackSpace()
         {
             MoveCursor(-1);
-            chars[Position].SetChar(Constants.EMPTY_CHAR, CurrentPenState);
+            Chars[Position].SetChar(Constants.EmptyChar, CurrentPenState);
         }
 
         public void InsertChar(int b)
@@ -120,7 +120,7 @@
             }
 
             var ch = GetCharForByte(b);
-            chars[Position].SetChar(ch, CurrentPenState);
+            Chars[Position].SetChar(ch, CurrentPenState);
             MoveCursor(1);
         }
 
@@ -129,7 +129,7 @@
         /// </summary>
         public static string GetCharForByte(int byteValue)
         {
-            if (Constants.EXTENDED_CHAR_CODES.TryGetValue(byteValue, out var v))
+            if (Constants.ExtendedCharCodes.TryGetValue(byteValue, out var v))
             {
                 return char.ConvertFromUtf32(v);
             }
@@ -139,9 +139,9 @@
 
         public void ClearFromPos(int startPos)
         {
-            for (var i = startPos; i < Constants.SCREEN_COL_COUNT; i++)
+            for (var i = startPos; i < Constants.ScreenColCount; i++)
             {
-                chars[i].Reset();
+                Chars[i].Reset();
             }
         }
 
@@ -160,8 +160,8 @@
         public void SetPenStyles(SerializedPenState styles)
         {
             CurrentPenState.SetStyles(styles);
-            var currChar = chars[Position];
-            currChar.SetPenState(CurrentPenState);
+            var currentChar = Chars[Position];
+            currentChar.SetPenState(CurrentPenState);
         }
     }
 }
