@@ -248,7 +248,7 @@ namespace Mp4Browser.Mp4
                             var sample = Moof.Traf.Trun.Samples[index];
                             if (sample.Size.HasValue)
                             {
-                                var ccData = GetCCData(fs, startPosition, sample.Size.Value);
+                                var ccData = GetCcData(fs, startPosition, sample.Size.Value);
                                 if (ccData.Count > 0)
                                 {
                                     if (sample.TimeOffset.HasValue)
@@ -338,7 +338,7 @@ namespace Mp4Browser.Mp4
             Console.WriteLine($"Start: {FormatTime(data.Start)}, {FormatTime(data.End)}, {GetText(data.Screen)}");
         }
 
-        private string GetText(SerializedRow[] dataScreen)
+        private static string GetText(SerializedRow[] dataScreen)
         {
             var sb = new StringBuilder();
 
@@ -368,30 +368,24 @@ namespace Mp4Browser.Mp4
                 Data2 = data2;
             }
 
-            public CcData()
-            {
-
-            }
-
             public int Type { get; set; }
             public int Data1 { get; set; }
             public int Data2 { get; set; }
             public ulong Time { get; set; }
         }
 
-        private List<CcData> GetCCData(Stream fs, uint startPos, ulong size)
+        private static List<CcData> GetCcData(Stream fs, uint startPos, ulong size)
         {
             var fieldData = new List<CcData>();
             for (var i = startPos; i < startPos + size - 5; i++)
             {
                 var buffer = new byte[4];
-                fs.Seek((long)i, SeekOrigin.Begin);
+                fs.Seek(i, SeekOrigin.Begin);
                 fs.Read(buffer, 0, buffer.Length);
                 var nalSize = GetUInt32(buffer, 0);
                 var flag = fs.ReadByte();
                 if (IsRbspNalUnitType(flag & 0x1F))
                 {
-                    //parseCCDataFromSEI(getSEIData(raw, i + 5, i + nalSize + 3), fieldData);
                     var seiData = GetSeiData(fs, i + 5, i + nalSize + 3);
                     ParseCcDataFromSei(seiData, fieldData);
                 }
